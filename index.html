@@ -183,11 +183,29 @@
     background: rgba(14,16,19,0.85);
     border:1px solid var(--border);
     color: var(--text); font-size:12px; line-height:1;
-    display:flex; align-items:center; justify-content:center;
+    display:none; align-items:center; justify-content:center;
     cursor:pointer;
     transition: all .15s;
   }
+  .avatar-upload.show-remove .avatar-remove{ display:flex; }
   .avatar-remove:hover{ color:#ff6b6b; border-color:#ff6b6b; }
+
+  .avatar-lightbox{
+    display:none;
+    position: fixed; inset:0;
+    background: rgba(8,9,11,0.9);
+    z-index: 999;
+    align-items:center; justify-content:center;
+    padding: 24px;
+    cursor: zoom-out;
+  }
+  .avatar-lightbox.show{ display:flex; }
+  .avatar-lightbox img{
+    max-width: 90vw; max-height: 90vh;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    object-fit: contain;
+  }
 
   /* ---------- LAYOUT ---------- */
   .layout{
@@ -804,13 +822,17 @@
       </div>
     </div>
 
-    <div class="avatar-upload" id="avatarUpload" title="העלאת תמונה אישית">
+    <div class="avatar-upload" id="avatarUpload" title="לחיצה: הגדלה · לחיצה כפולה: הסרה">
       <img id="avatarImg" alt="תמונה אישית" style="display:none;">
       <div class="avatar-placeholder" id="avatarPlaceholder">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
       </div>
-      <button type="button" class="avatar-remove" id="avatarRemove" style="display:none;" title="הסר תמונה">✕</button>
+      <button type="button" class="avatar-remove" id="avatarRemove" title="הסר תמונה">✕</button>
       <input type="file" id="avatarInput" accept="image/*" hidden>
+    </div>
+
+    <div class="avatar-lightbox" id="avatarLightbox">
+      <img id="avatarLightboxImg" alt="תמונה מוגדלת">
     </div>
 
     <svg class="hero-meter" width="120" height="120" viewBox="0 0 120 120" id="heroRing">
@@ -988,18 +1010,19 @@ const avatarInput = document.getElementById('avatarInput');
 const avatarImg = document.getElementById('avatarImg');
 const avatarPlaceholder = document.getElementById('avatarPlaceholder');
 const avatarRemove = document.getElementById('avatarRemove');
+const avatarLightbox = document.getElementById('avatarLightbox');
+const avatarLightboxImg = document.getElementById('avatarLightboxImg');
 
 function showAvatar(dataUrl){
   avatarImg.src = dataUrl;
   avatarImg.style.display = 'block';
   avatarPlaceholder.style.display = 'none';
-  avatarRemove.style.display = 'flex';
 }
 function hideAvatar(){
   avatarImg.removeAttribute('src');
   avatarImg.style.display = 'none';
   avatarPlaceholder.style.display = 'flex';
-  avatarRemove.style.display = 'none';
+  avatarUpload.classList.remove('show-remove');
 }
 
 (function loadAvatar(){
@@ -1009,9 +1032,34 @@ function hideAvatar(){
   } catch(e){}
 })();
 
+function openLightbox(){
+  avatarLightboxImg.src = avatarImg.src;
+  avatarLightbox.classList.add('show');
+}
+function closeLightbox(){
+  avatarLightbox.classList.remove('show');
+}
+avatarLightbox.addEventListener('click', closeLightbox);
+
+let avatarClickTimer = null;
 avatarUpload.addEventListener('click', (e)=>{
   if(e.target === avatarRemove) return;
-  avatarInput.click();
+  clearTimeout(avatarClickTimer);
+  avatarClickTimer = setTimeout(()=>{
+    if(avatarImg.getAttribute('src')){
+      openLightbox();
+    } else {
+      avatarInput.click();
+    }
+  }, 230);
+});
+
+avatarUpload.addEventListener('dblclick', (e)=>{
+  clearTimeout(avatarClickTimer);
+  if(e.target === avatarRemove) return;
+  if(avatarImg.getAttribute('src')){
+    avatarUpload.classList.toggle('show-remove');
+  }
 });
 
 avatarInput.addEventListener('change', (e)=>{
@@ -1021,14 +1069,14 @@ avatarInput.addEventListener('change', (e)=>{
   reader.onload = (ev)=>{
     const img = new Image();
     img.onload = ()=>{
-      const size = 300;
+      const size = 800;
       const canvas = document.createElement('canvas');
       canvas.width = size; canvas.height = size;
       const ctx = canvas.getContext('2d');
       const scale = Math.max(size/img.width, size/img.height);
       const w = img.width*scale, h = img.height*scale;
       ctx.drawImage(img, (size-w)/2, (size-h)/2, w, h);
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.88);
       try{ localStorage.setItem('heroAvatarImage', dataUrl); } catch(err){}
       showAvatar(dataUrl);
     };

@@ -4,10 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>מייעץ כושר אישי</title>
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0e1013">
-<link rel="icon" href="icon-192.png">
-<link rel="apple-touch-icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;700;800;900&family=Assistant:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -288,8 +284,14 @@
     grid-template-columns: repeat(7, 1fr);
     gap: 14px;
   }
-  @media (max-width: 700px){
+  @media (max-width: 900px){
+    .workout-grid{ grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (max-width: 640px){
     .workout-grid{ grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 460px){
+    .workout-grid{ grid-template-columns: 1fr; }
   }
   .workout-day{
     background: var(--surface-2);
@@ -297,6 +299,7 @@
     border-radius: var(--radius);
     padding: 16px 10px;
     display:flex; flex-direction:column; gap:12px;
+    min-width: 0;
   }
   .workout-day-title{
     font-family:'Rubik'; font-weight:800; font-size: 16px;
@@ -325,19 +328,23 @@
   }
   .workout-row select:focus{ border-color: var(--goal-a); }
   .muscle-chips{
-    display:flex; flex-wrap: wrap; gap: 5px;
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
   }
   .muscle-chip{
-    flex: 1 1 auto;
     background: var(--bg);
     border: 1px solid var(--border);
     color: var(--text-dim);
     font-family:'Assistant'; font-weight:700; font-size: 12px;
-    padding: 6px 8px;
+    padding: 8px 4px;
     border-radius: 7px;
     cursor:pointer;
     transition: all .15s;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: center;
   }
   .muscle-chip:hover{ border-color: color-mix(in srgb, var(--goal-a) 50%, var(--border)); }
   .muscle-chip.active{
@@ -654,10 +661,6 @@
     .schedule-add-row select#scheduleDay{ flex: 1 1 100%; order: -1; }
     .schedule-add-btn{ flex: 1 1 100%; }
 
-    .workout-grid{ grid-template-columns: 1fr 1fr; gap: 10px; }
-
-    .protein-table td, .protein-table th{ padding: 9px 10px; font-size: 13.5px; }
-
     .stat{ padding: 12px; }
     .stat .s-value{ font-size: 20px; }
 
@@ -669,8 +672,45 @@
   }
 
   @media (max-width: 460px){
-    .workout-grid{ grid-template-columns: 1fr; }
     .row2{ grid-template-columns: 1fr; }
+  }
+
+  /* protein table becomes a stacked card list on narrow phones instead of a
+     horizontally-scrolling table, which is much easier to read and tap */
+  @media (max-width: 560px){
+    .protein-table-wrap{ overflow-x: hidden; }
+    table.protein-table{ min-width: 0; width: 100%; }
+    .protein-table thead{ display:none; }
+    .protein-table tbody tr{
+      display:flex;
+      flex-wrap: wrap;
+      align-items:center;
+      position: relative;
+      padding: 12px 44px 12px 14px;
+      gap: 2px 14px;
+    }
+    .protein-table td{ display:block; padding: 2px 0; border:none; }
+    .protein-table td.col-check{
+      position:absolute; top:12px; right:12px;
+      width:auto; padding:0;
+    }
+    .protein-table td.p-name{
+      width: 100%;
+      font-size: 15px;
+    }
+    .protein-table td:not(.col-check):not(.p-name){
+      font-size: 12.5px;
+      color: var(--text-faint);
+    }
+    .protein-table td:not(.col-check):not(.p-name)::before{
+      content: attr(data-label);
+      color: var(--text-faint);
+      margin-left: 4px;
+    }
+    .protein-table td:not(.col-check):not(.p-name) .cell-value{
+      color: var(--text-dim);
+      font-weight: 700;
+    }
   }
 </style>
 </head>
@@ -1219,8 +1259,8 @@ function renderProteinTable(filterText){
     tr.innerHTML = `
       <td class="col-check"><input type="checkbox" data-food="${food.name}" ${isPicked ? 'checked' : ''}></td>
       <td class="p-name">${food.name}</td>
-      <td>${food.kcal}</td>
-      <td>${food.p} גרם</td>
+      <td data-label="קלוריות ל-100 גרם"><span class="cell-value">${food.kcal}</span></td>
+      <td data-label="חלבון ל-100 גרם"><span class="cell-value">${food.p} גרם</span></td>
     `;
     tbody.appendChild(tr);
   });
@@ -1695,12 +1735,6 @@ document.getElementById('backBtn').addEventListener('click', ()=>{
   document.getElementById('placeholder').style.display = 'flex';
   document.querySelector('.hero').scrollIntoView({behavior:'smooth', block:'start'});
 });
-
-if('serviceWorker' in navigator){
-  window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('service-worker.js').catch(()=>{});
-  });
-}
 </script>
 </body>
 </html>

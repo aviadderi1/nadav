@@ -1,4 +1,4 @@
-const CACHE_NAME = 'koach-ishi-v1';
+const CACHE_NAME = 'koach-ishi-v2';
 const FILES_TO_CACHE = [
   './index.html',
   './manifest.json',
@@ -22,7 +22,27 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
+// Network-first for the HTML page itself, so updates you push always show up
+// right away. Falls back to the cached copy only when there's no connection.
+// Other static assets (icons, manifest) stay cache-first for speed.
 self.addEventListener('fetch', (event) => {
+  const isHTMLPage = event.request.mode === 'navigate' ||
+    event.request.url.endsWith('/index.html') ||
+    event.request.url.endsWith('/');
+
+  if (isHTMLPage) {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+          return response;
+        })
+        .catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request).then((cached) => cached || fetch(event.request))
   );

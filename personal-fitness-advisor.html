@@ -577,6 +577,44 @@
   .generate-btn:hover{ filter: brightness(1.08); transform: translateY(-1px); }
   .generate-btn:active{ transform: translateY(0); }
 
+  .mode-choice{ margin-top: 18px; }
+  .mode-choice-label{
+    font-size: 13px; font-weight:700; color: var(--text-dim);
+    margin: 0 0 10px; text-align:center;
+  }
+  .mode-buttons{ display:grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .mode-btn{
+    display:flex; flex-direction:column; align-items:center; gap:4px;
+    border: 1.5px solid var(--border);
+    background: var(--surface-2);
+    border-radius: var(--radius);
+    padding: 14px 10px;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .mode-btn:hover{ border-color: var(--goal-a); background: var(--goal-a-soft); }
+  .mode-btn-title{ font-family:'Rubik'; font-weight:800; font-size: 14.5px; color: var(--text); }
+  .mode-btn-sub{ font-size: 11px; color: var(--text-faint); text-align:center; line-height:1.4; }
+
+  .week-day-block{ margin-bottom: 22px; }
+  .week-day-block:last-child{ margin-bottom: 0; }
+  .week-day-title{
+    display:flex; align-items:center; gap:10px;
+    font-family:'Rubik'; font-weight:800; font-size: 17px;
+    color: var(--goal-a);
+    margin: 0 0 12px;
+  }
+  .week-day-title .day-badge{
+    background: var(--goal-a-soft);
+    border: 1px solid color-mix(in srgb, var(--goal-a) 45%, var(--border));
+    padding: 3px 12px;
+    border-radius: 100px;
+    font-size: 13px;
+  }
+  .week-day-title .day-line{
+    flex:1; height:1px; background: var(--border);
+  }
+
   /* ---------- RESULTS ---------- */
   .placeholder{
     display:flex; flex-direction:column; align-items:center; justify-content:center;
@@ -901,6 +939,20 @@
       </div>
 
       <button class="generate-btn" id="generateBtn">בנה לי תפריט</button>
+
+      <div class="mode-choice" id="modeChoice" style="display:none;">
+        <p class="mode-choice-label">איזה סוג תפריט תרצה?</p>
+        <div class="mode-buttons">
+          <button type="button" class="mode-btn" id="dailyModeBtn">
+            <span class="mode-btn-title">תפריט יומי</span>
+            <span class="mode-btn-sub">יום אחד, מגוון בין הארוחות</span>
+          </button>
+          <button type="button" class="mode-btn" id="weeklyModeBtn">
+            <span class="mode-btn-title">תפריט שבועי</span>
+            <span class="mode-btn-sub">7 ימים, מגוון בין הארוחות והימים</span>
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- RESULTS -->
@@ -1134,7 +1186,7 @@ document.querySelectorAll('.goal-card').forEach(card=>{
 
     // if a plan was already generated, refresh it immediately to match the new goal
     if(document.getElementById('results').classList.contains('show')){
-      generatePlan(false);
+      generatePlan(lastMode === 'weekly', false);
     }
   });
 });
@@ -1617,7 +1669,8 @@ function gramsFor(food, targetGramMacro, macroKey){
   return g;
 }
 
-function buildMealPlanFromPantry(kcal, macros, matchedByCat, goalType){
+function buildMealPlanFromPantry(kcal, macros, matchedByCat, goalType, numDays){
+  numDays = numDays || 1;
   const dist = [
     {name:"ארוחת בוקר", pct:0.25},
     {name:"ארוחת ביניים", pct:0.12},
@@ -1629,47 +1682,54 @@ function buildMealPlanFromPantry(kcal, macros, matchedByCat, goalType){
   const fallbackPool = CAT_FALLBACK_LIST[goalType] || CAT_FALLBACK_LIST.cut;
   const usedFallback = new Set();
   const occurrenceCount = {}; // tracks how many times each exact food name has already appeared
+  let slot = 0; // continuous counter across every meal in every day, so variety spans the whole week
 
-  function pick(cat, i){
+  function pick(cat){
     const list = matchedByCat[cat];
-    if(list && list.length) return list[i % list.length];
+    if(list && list.length) return list[slot % list.length];
     usedFallback.add(cat);
     const fallbackList = fallbackPool[cat];
-    return fallbackList[i % fallbackList.length];
+    return fallbackList[slot % fallbackList.length];
   }
 
-  function pickAndName(cat, i){
-    const food = pick(cat, i);
+  function pickAndName(cat){
+    const food = pick(cat);
     const occ = occurrenceCount[food.name] || 0;
     occurrenceCount[food.name] = occ + 1;
     return {food, label: displayName(food, occ)};
   }
 
-  const plan = dist.map((d,i)=>{
-    const mealKcal = Math.round(kcal*d.pct);
-    const mealProtein = macros.protein*d.pct;
-    const mealCarbs = macros.carbs*d.pct;
-    const mealFat = macros.fat*d.pct;
+  const days = [];
+  for(let d=0; d<numDays; d++){
+    const dayPlan = dist.map((entry)=>{
+      const mealKcal = Math.round(kcal*entry.pct);
+      const mealProtein = macros.protein*entry.pct;
+      const mealCarbs = macros.carbs*entry.pct;
+      const mealFat = macros.fat*entry.pct;
 
-    const {food: proteinFood, label: proteinLabel} = pickAndName('protein', i);
-    const {food: carbFood, label: carbLabel} = pickAndName('carb', i);
-    const {food: fatFood, label: fatLabel} = pickAndName('fat', i);
+      const {food: proteinFood, label: proteinLabel} = pickAndName('protein');
+      const {food: carbFood, label: carbLabel} = pickAndName('carb');
+      const {food: fatFood, label: fatLabel} = pickAndName('fat');
 
-    const vegListRaw = matchedByCat.veg.length ? matchedByCat.veg : fallbackPool.veg;
-    if(!matchedByCat.veg.length) usedFallback.add('veg');
-    const vegFood = vegListRaw[i % vegListRaw.length];
+      const vegListRaw = matchedByCat.veg.length ? matchedByCat.veg : fallbackPool.veg;
+      if(!matchedByCat.veg.length) usedFallback.add('veg');
+      const vegFood = vegListRaw[slot % vegListRaw.length];
 
-    const items = [
-      {name: proteinLabel, qty: gramsFor(proteinFood, mealProtein, 'p'), unit:"גרם"},
-      {name: carbLabel, qty: gramsFor(carbFood, mealCarbs, 'c'), unit:"גרם"},
-      {name: vegFood.name, qty: 150, unit:"גרם"},
-      {name: fatLabel, qty: gramsFor(fatFood, mealFat, 'f'), unit:"גרם"},
-    ];
+      const items = [
+        {name: proteinLabel, qty: gramsFor(proteinFood, mealProtein, 'p'), unit:"גרם"},
+        {name: carbLabel, qty: gramsFor(carbFood, mealCarbs, 'c'), unit:"גרם"},
+        {name: vegFood.name, qty: 150, unit:"גרם"},
+        {name: fatLabel, qty: gramsFor(fatFood, mealFat, 'f'), unit:"גרם"},
+      ];
 
-    return {name: d.name, kcal: mealKcal, items};
-  });
+      slot++;
+      return {name: entry.name, kcal: mealKcal, items};
+    });
+    days.push(dayPlan);
+  }
 
-  return {plan, usedFallback};
+  if(numDays === 1) return {plan: days[0], usedFallback};
+  return {days, usedFallback};
 }
 
 function macroTargets(kcal, goalType, weight){
@@ -1761,7 +1821,25 @@ function buildMealPlan(kcal, goalType){
   }));
 }
 
-function generatePlan(scrollToResults){
+const WEEK_DAY_NAMES = ["ראשון","שני","שלישי","רביעי","חמישי","שישי","שבת"];
+let lastMode = 'daily';
+
+function renderMealCard(meal){
+  const card = document.createElement('div');
+  card.className = 'meal-card';
+  card.innerHTML = `
+    <div class="meal-head">
+      <div class="m-name">${meal.name}</div>
+      <div class="m-kcal">${meal.kcal} קק"ל</div>
+    </div>
+    <div class="meal-items">
+      ${meal.items.map(it=>`<div class="meal-item"><span>${it.name}</span><span class="qty">${it.qty} ${it.unit}</span></div>`).join('')}
+    </div>
+  `;
+  return card;
+}
+
+function generatePlan(isWeekly, scrollToResults){
   const weight = parseFloat(document.getElementById('weight').value);
   const height = parseFloat(document.getElementById('height').value);
   const age = parseFloat(document.getElementById('age').value);
@@ -1776,6 +1854,8 @@ function generatePlan(scrollToResults){
     return;
   }
   const activityFactor = parseFloat(activityEl.value);
+
+  lastMode = isWeekly ? 'weekly' : 'daily';
 
   // Mifflin-St Jeor BMR
   let bmr;
@@ -1792,7 +1872,9 @@ function generatePlan(scrollToResults){
 
   // update stats
   document.getElementById('statKcal').textContent = targetKcal.toLocaleString();
-  document.getElementById('statKcalSource').textContent = 'מחושב אוטומטית לפי הנתונים שלך';
+  document.getElementById('statKcalSource').textContent = isWeekly
+    ? 'יעד יומי (זהה לכל אחד מ-7 הימים)'
+    : 'מחושב אוטומטית לפי הנתונים שלך';
   document.getElementById('statProtein').innerHTML = macros.protein + '<small> גרם</small>';
   document.getElementById('statCarbs').innerHTML = macros.carbs + '<small> גרם</small>';
   document.getElementById('statFat').innerHTML = macros.fat + '<small> גרם</small>';
@@ -1822,58 +1904,68 @@ function generatePlan(scrollToResults){
   document.getElementById('legFat').textContent = Math.round(fPct*100)+'%';
 
   // hero ring
-  const heroCirc = 327;
   const heroFill = document.getElementById('heroRingFill');
   heroFill.style.strokeDashoffset = 0;
   document.getElementById('heroRingText').textContent = targetKcal;
 
-  // meal plan — use selected protein sources if any, otherwise the default template
+  // meal plan — use selected protein sources if any, otherwise a rotating default pool
   const pantryNoteEl = document.getElementById('pantryNote');
   const hasTableProteins = selectedProteins.size > 0;
-  let plan;
-
-  if(hasTableProteins){
-    const matchedByCat = {protein:[], carb:[], fat:[], veg:[]};
-
-    selectedProteins.forEach(name=>{
-      const food = pantryDB.find(f=>f.name===name);
-      if(food && !matchedByCat.protein.some(f=>f.name===food.name)){
-        matchedByCat.protein.push(food);
-      }
-    });
-
-    const result = buildMealPlanFromPantry(targetKcal, macros, matchedByCat, goal);
-    plan = result.plan;
-
-    if(result.usedFallback.size){
-      const missing = [...result.usedFallback].map(c=>CAT_LABEL[c]).join(', ');
-      pantryNoteEl.innerHTML = `התפריט נבנה סביב מקורות החלבון שסימנת. עבור <b>${missing}</b> השתמשנו בברירת מחדל מומלצת לפי המטרה שלך.`;
-      pantryNoteEl.style.display = 'block';
-    } else {
-      pantryNoteEl.innerHTML = 'התפריט נבנה כולו ממקורות החלבון שסימנת.';
-      pantryNoteEl.style.display = 'block';
-    }
-  } else {
-    plan = buildMealPlan(targetKcal, goal);
-    pantryNoteEl.style.display = 'none';
-  }
-
   const mealCardsEl = document.getElementById('mealCards');
   mealCardsEl.innerHTML = '';
-  plan.forEach(meal=>{
-    const card = document.createElement('div');
-    card.className = 'meal-card';
-    card.innerHTML = `
-      <div class="meal-head">
-        <div class="m-name">${meal.name}</div>
-        <div class="m-kcal">${meal.kcal} קק"ל</div>
-      </div>
-      <div class="meal-items">
-        ${meal.items.map(it=>`<div class="meal-item"><span>${it.name}</span><span class="qty">${it.qty} ${it.unit}</span></div>`).join('')}
-      </div>
-    `;
-    mealCardsEl.appendChild(card);
+
+  const matchedByCat = {protein:[], carb:[], fat:[], veg:[]};
+  selectedProteins.forEach(name=>{
+    const food = pantryDB.find(f=>f.name===name);
+    if(food && !matchedByCat.protein.some(f=>f.name===food.name)){
+      matchedByCat.protein.push(food);
+    }
   });
+
+  if(isWeekly){
+    const result = buildMealPlanFromPantry(targetKcal, macros, matchedByCat, goal, 7);
+
+    if(hasTableProteins){
+      pantryNoteEl.innerHTML = result.usedFallback.size
+        ? `התפריט השבועי נבנה סביב מקורות החלבון שסימנת, עם מגוון בין הימים והארוחות. עבור <b>${[...result.usedFallback].map(c=>CAT_LABEL[c]).join(', ')}</b> השתמשנו במאגר מגוון לפי המטרה שלך.`
+        : 'התפריט השבועי נבנה ממקורות החלבון שסימנת, עם מגוון בין הימים והארוחות.';
+    } else {
+      pantryNoteEl.innerHTML = 'התפריט השבועי נבנה ממאגר מגוון לפי המטרה שלך, עם רוטציה בין הימים והארוחות.';
+    }
+    pantryNoteEl.style.display = 'block';
+
+    result.days.forEach((dayPlan, dIdx)=>{
+      const dayBlock = document.createElement('div');
+      dayBlock.className = 'week-day-block';
+      dayBlock.innerHTML = `
+        <div class="week-day-title">
+          <span class="day-badge">יום ${WEEK_DAY_NAMES[dIdx]}</span>
+          <span class="day-line"></span>
+        </div>
+      `;
+      dayPlan.forEach(meal=> dayBlock.appendChild(renderMealCard(meal)));
+      mealCardsEl.appendChild(dayBlock);
+    });
+  } else {
+    let plan;
+    if(hasTableProteins){
+      const result = buildMealPlanFromPantry(targetKcal, macros, matchedByCat, goal);
+      plan = result.plan;
+
+      if(result.usedFallback.size){
+        const missing = [...result.usedFallback].map(c=>CAT_LABEL[c]).join(', ');
+        pantryNoteEl.innerHTML = `התפריט נבנה סביב מקורות החלבון שסימנת. עבור <b>${missing}</b> השתמשנו בברירת מחדל מומלצת לפי המטרה שלך.`;
+        pantryNoteEl.style.display = 'block';
+      } else {
+        pantryNoteEl.innerHTML = 'התפריט נבנה כולו ממקורות החלבון שסימנת.';
+        pantryNoteEl.style.display = 'block';
+      }
+    } else {
+      plan = buildMealPlan(targetKcal, goal);
+      pantryNoteEl.style.display = 'none';
+    }
+    plan.forEach(meal=> mealCardsEl.appendChild(renderMealCard(meal)));
+  }
 
   document.getElementById('placeholder').style.display = 'none';
   document.getElementById('results').classList.add('show');
@@ -1882,7 +1974,31 @@ function generatePlan(scrollToResults){
   }
 }
 
-document.getElementById('generateBtn').addEventListener('click', ()=>generatePlan(true));
+document.getElementById('generateBtn').addEventListener('click', ()=>{
+  const weight = parseFloat(document.getElementById('weight').value);
+  const height = parseFloat(document.getElementById('height').value);
+  const age = parseFloat(document.getElementById('age').value);
+  const activityEl = document.querySelector('input[name=activity]:checked');
+
+  if(!weight || !height || !age){
+    alert('אנא מלאו משקל, גובה וגיל תקינים.');
+    return;
+  }
+  if(!goal){
+    alert('בחרו מטרה: חיטוב או מסת שריר.');
+    return;
+  }
+  if(!activityEl){
+    alert('בחרו רמת פעילות שבועית.');
+    return;
+  }
+
+  document.getElementById('modeChoice').style.display = 'block';
+  document.getElementById('modeChoice').scrollIntoView({behavior:'smooth', block:'nearest'});
+});
+
+document.getElementById('dailyModeBtn').addEventListener('click', ()=>generatePlan(false, true));
+document.getElementById('weeklyModeBtn').addEventListener('click', ()=>generatePlan(true, true));
 
 document.getElementById('backBtn').addEventListener('click', ()=>{
   document.getElementById('results').classList.remove('show');

@@ -1,0 +1,1706 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>מייעץ כושר אישי</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0e1013">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;700;800;900&family=Assistant:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0e1013;
+    --bg-grid: #ffffff08;
+    --surface: #181b20;
+    --surface-2: #1f232a;
+    --border: #2b3038;
+    --text: #eef1ee;
+    --text-dim: #8d95a1;
+    --text-faint: #5b6270;
+
+    /* neutral / pre-selection accent */
+    --accent: #c7f23a;
+    --accent-soft: #c7f23a22;
+
+    /* goal themes — swapped via data-goal on <body> */
+    --goal-a: #c7f23a; /* neutral default, overridden below */
+    --goal-a-soft: #c7f23a1f;
+    --goal-b: #ff8a3d;
+
+    --radius: 14px;
+    --radius-lg: 22px;
+  }
+
+  body[data-goal="cut"]{
+    --goal-a: #45e0c3;
+    --goal-a-soft: #45e0c322;
+  }
+  body[data-goal="bulk"]{
+    --goal-a: #ff9a44;
+    --goal-a-soft: #ff9a4422;
+  }
+
+  *{ box-sizing: border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background:
+      radial-gradient(1100px 500px at 85% -10%, var(--goal-a-soft), transparent 60%),
+      var(--bg);
+    color: var(--text);
+    font-family: 'Assistant', sans-serif;
+    min-height: 100vh;
+    transition: background 0.6s ease;
+  }
+
+  .grid-overlay{
+    position: fixed; inset:0; pointer-events:none; z-index:0;
+    background-image: linear-gradient(var(--bg-grid) 1px, transparent 1px), linear-gradient(90deg, var(--bg-grid) 1px, transparent 1px);
+    background-size: 44px 44px;
+    mask-image: radial-gradient(1200px 700px at 80% 0%, black, transparent 75%);
+  }
+
+  .wrap{
+    position: relative; z-index:1;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 40px 24px 90px;
+  }
+
+  /* ---------- HERO ---------- */
+  .hero{
+    display:flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 28px;
+    padding-bottom: 34px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+  }
+  .hero-lockup{
+    display:flex;
+    align-items: flex-end;
+    gap: 22px;
+    flex-wrap: wrap;
+  }
+  .lifter-figure{
+    flex-shrink:0;
+    width: clamp(70px, 8vw, 110px);
+    height: auto;
+    filter: drop-shadow(0 6px 10px rgba(0,0,0,0.45));
+  }
+  .lifter-figure [fill="var(--text)"]{ transition: fill .5s ease; }
+  .lifter-figure [fill="var(--goal-a)"]{ transition: fill .5s ease; }
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:9px;
+    font-family:'Assistant'; font-weight:800; font-size: 12.5px;
+    letter-spacing: 1.2px;
+    color: var(--goal-a);
+    background: linear-gradient(135deg, #1c2027, #14171b);
+    border: 1.5px solid color-mix(in srgb, var(--goal-a) 55%, transparent);
+    padding: 7px 16px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    transition: all .5s ease;
+    box-shadow: 0 2px 0 0 rgba(0,0,0,0.35), inset 0 1px 0 0 #ffffff08;
+  }
+  .eyebrow-icon{ color: var(--goal-a); flex-shrink:0; }
+  h1{
+    font-family: 'Rubik', sans-serif;
+    font-weight: 900;
+    font-size: clamp(36px, 5vw, 58px);
+    line-height: 1.05;
+    margin: 0 0 14px;
+    letter-spacing: -1px;
+  }
+  h1.tough{
+    text-shadow:
+      0 2px 0 rgba(0,0,0,0.55),
+      0 4px 8px rgba(0,0,0,0.35);
+  }
+  .tough-icon{
+    display:inline-flex;
+    vertical-align: -8px;
+    margin-left: 12px;
+    color: var(--goal-a);
+    transition: color .5s ease;
+    filter: drop-shadow(0 3px 3px rgba(0,0,0,0.5));
+  }
+  .tough-icon svg{ width: clamp(28px, 4vw, 40px); height: clamp(28px, 4vw, 40px); }
+  h1 span#heroWord.stamp{
+    display:inline-block;
+    color: #0e1013;
+    background: var(--goal-a);
+    padding: 2px 14px 5px;
+    margin: 0 2px;
+    border-radius: 5px;
+    transform: rotate(-2.5deg);
+    box-shadow: 0 3px 0 0 color-mix(in srgb, var(--goal-a) 55%, black), 0 6px 10px rgba(0,0,0,0.4);
+    transition: background .5s ease;
+  }
+  .hazard-bar{
+    width: 84px;
+    height: 7px;
+    border-radius: 2px;
+    margin: 2px 0 18px;
+    background: repeating-linear-gradient(135deg, var(--goal-a) 0 10px, #14171b 10px 20px);
+    transition: background .5s ease;
+  }
+  .sub{
+    color: var(--text-dim);
+    font-size: 17px;
+    max-width: 480px;
+    line-height: 1.6;
+  }
+  .hero-meter{ flex-shrink:0; }
+
+  /* ---------- LAYOUT ---------- */
+  .layout{
+    display:grid;
+    grid-template-columns: 400px 1fr;
+    gap: 26px;
+    align-items: start;
+  }
+  @media (max-width: 900px){
+    .layout{ grid-template-columns: 1fr; }
+  }
+
+  .card{
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 26px;
+  }
+
+  .card-title{
+    font-family:'Rubik'; font-weight:800; font-size: 20px;
+    margin: 0 0 4px;
+  }
+  .card-desc{ color: var(--text-faint); font-size: 14px; margin: 0 0 22px; }
+
+  /* ---------- FORM ---------- */
+  label{
+    display:block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-dim);
+    margin: 0 0 8px;
+  }
+  .field{ margin-bottom: 18px; }
+  .row2{ display:grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+  input[type=number]{
+    width: 100%;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Assistant';
+    font-size: 16px;
+    font-weight: 600;
+    padding: 12px 14px;
+    border-radius: var(--radius);
+    outline: none;
+    transition: border-color .2s;
+  }
+  input[type=number]:focus{ border-color: var(--goal-a); }
+  input[type=number]::-webkit-inner-spin-button{ opacity: 0.4; }
+
+  .seg{
+    display:grid;
+    grid-auto-flow: column;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 4px;
+    gap: 4px;
+  }
+  .seg button{
+    border:none; background: transparent; color: var(--text-dim);
+    font-family:'Assistant'; font-weight:700; font-size: 14px;
+    padding: 9px 6px; border-radius: 10px; cursor:pointer;
+    transition: all .2s;
+  }
+  .seg button.active{ background: var(--goal-a); color:#0e1013; }
+
+  .activity-list{ display:flex; flex-direction: column; gap: 8px; }
+  .activity-opt{
+    display:flex; align-items:center; gap:12px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    border-radius: var(--radius);
+    padding: 11px 14px;
+    cursor:pointer;
+    transition: all .15s;
+  }
+  .activity-opt:hover{ border-color: color-mix(in srgb, var(--goal-a) 50%, var(--border)); }
+  .activity-opt.active{
+    border-color: var(--goal-a);
+    background: var(--goal-a-soft);
+  }
+  .activity-opt input{ accent-color: var(--goal-a); width:16px; height:16px; flex-shrink:0; }
+  .activity-opt .a-title{ font-weight:700; font-size: 14px; }
+  .activity-opt .a-sub{ font-size: 12px; color: var(--text-faint); }
+
+  .goal-cards{ display:grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .goal-card{
+    border: 1.5px solid var(--border);
+    background: var(--surface-2);
+    border-radius: var(--radius);
+    padding: 16px 12px;
+    text-align:center;
+    cursor:pointer;
+    transition: all .2s;
+  }
+  .goal-card .icon{ font-size: 26px; display:block; margin-bottom: 6px; }
+  .goal-card .g-title{ font-family:'Rubik'; font-weight:800; font-size: 15px; }
+  .goal-card .g-sub{ font-size: 11.5px; color: var(--text-faint); margin-top:2px; }
+  .goal-card[data-g="cut"].active{ border-color: #45e0c3; background: #45e0c322; }
+  .goal-card[data-g="bulk"].active{ border-color: #ff9a44; background: #ff9a4422; }
+
+  .pantry-hint{ font-size: 12px; color: var(--text-faint); margin-top: 7px; line-height: 1.5; }
+
+  .pantry-note{
+    font-size: 12.5px;
+    color: var(--text-dim);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    line-height: 1.6;
+    margin-top: 4px;
+  }
+  .pantry-note b{ color: var(--goal-a); }
+
+  .two-col-grid{
+    display:grid;
+    grid-template-columns: 1fr;
+    gap: 26px;
+    align-items: start;
+    margin-top: 26px;
+  }
+  .protein-picker-card{ margin-top: 0; }
+
+  .workout-grid{
+    display:grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 14px;
+  }
+  @media (max-width: 700px){
+    .workout-grid{ grid-template-columns: repeat(2, 1fr); }
+  }
+  .workout-day{
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 10px;
+    display:flex; flex-direction:column; gap:12px;
+  }
+  .workout-day-title{
+    font-family:'Rubik'; font-weight:800; font-size: 16px;
+    text-align:center;
+    color: var(--goal-a);
+    margin-bottom: 2px;
+  }
+  .workout-rows{ display:flex; flex-direction:column; gap:12px; }
+  .workout-row{
+    display:flex; flex-direction:column; gap:8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 10px;
+    position: relative;
+  }
+  .workout-row select{
+    width:100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family:'Assistant'; font-weight:700; font-size: 15px;
+    padding: 10px 8px;
+    border-radius: 8px;
+    outline: none;
+  }
+  .workout-row select:focus{ border-color: var(--goal-a); }
+  .muscle-chips{
+    display:flex; flex-wrap: wrap; gap: 5px;
+  }
+  .muscle-chip{
+    flex: 1 1 auto;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-family:'Assistant'; font-weight:700; font-size: 12px;
+    padding: 6px 8px;
+    border-radius: 7px;
+    cursor:pointer;
+    transition: all .15s;
+    white-space: nowrap;
+  }
+  .muscle-chip:hover{ border-color: color-mix(in srgb, var(--goal-a) 50%, var(--border)); }
+  .muscle-chip.active{
+    background: var(--goal-a);
+    border-color: var(--goal-a);
+    color: #0e1013;
+  }
+  .workout-row .remove-row{
+    position:absolute; top:-9px; left:-9px;
+    width:24px; height:24px;
+    border-radius:50%;
+    background: var(--surface-2);
+    border:1px solid var(--border);
+    color: var(--text-faint);
+    font-size: 14px; line-height:1;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer;
+  }
+  .workout-row .remove-row:hover{ color: var(--text); border-color: var(--goal-a); }
+  .add-workout-btn{
+    background: transparent;
+    border: 1px dashed var(--border);
+    color: var(--text-faint);
+    font-family:'Assistant'; font-weight:700; font-size: 13.5px;
+    padding: 10px;
+    border-radius: 8px;
+    cursor:pointer;
+    transition: all .15s;
+  }
+  .add-workout-btn:hover{ border-color: var(--goal-a); color: var(--goal-a); }
+
+  .protein-search{
+    width: 100%;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Assistant';
+    font-size: 15px;
+    font-weight: 600;
+    padding: 12px 16px;
+    border-radius: var(--radius);
+    outline: none;
+    margin-bottom: 18px;
+    transition: border-color .2s;
+  }
+  .protein-search:focus{ border-color: var(--goal-a); }
+  .protein-search::placeholder{ color: var(--text-faint); font-weight: 500; }
+
+  .protein-table-wrap{
+    max-height: 420px;
+    overflow-y: auto;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+  table.protein-table{
+    width: 100%;
+    min-width: 420px;
+    border-collapse: collapse;
+    font-size: 14.5px;
+  }
+  .protein-table thead th{
+    position: sticky; top:0;
+    background: var(--surface-2);
+    color: var(--text-faint);
+    font-weight: 700; font-size: 12.5px;
+    text-align: right;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    z-index: 1;
+  }
+  .protein-table th.col-check, .protein-table td.col-check{ width: 44px; text-align:center; }
+  .protein-table tbody tr{
+    border-bottom: 1px solid var(--border);
+    transition: background .12s;
+    cursor: pointer;
+  }
+  .protein-table tbody tr:last-child{ border-bottom:none; }
+  .protein-table tbody tr:hover{ background: var(--surface-2); }
+  .protein-table tbody tr.picked{ background: var(--goal-a-soft); }
+  .protein-table td{ padding: 11px 14px; color: var(--text-dim); }
+  .protein-table td.p-name{ color: var(--text); font-weight: 700; }
+  .protein-table tbody tr.picked td.p-name{ color: var(--goal-a); }
+  .protein-table input[type=checkbox]{
+    width: 18px; height:18px;
+    accent-color: var(--goal-a);
+    cursor: pointer;
+  }
+
+  .reco-box{
+    background: var(--goal-a-soft);
+    border: 1.5px solid color-mix(in srgb, var(--goal-a) 45%, var(--border));
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    margin-bottom: 18px;
+    text-align: center;
+    transition: all .4s ease;
+  }
+  .reco-label{ font-size: 12.5px; font-weight:700; color: var(--text-dim); margin-bottom: 6px; }
+  .reco-value{ font-family:'Rubik'; font-weight:900; font-size: 30px; color: var(--goal-a); line-height:1; transition: color .4s ease; }
+  .reco-value small{ font-size: 14px; font-weight:700; color: var(--text-dim); }
+  .reco-sub{ font-size: 12px; color: var(--text-faint); margin-top: 6px; line-height:1.5; }
+
+  .schedule-card{ margin-top: 26px; }
+
+  .schedule-add-row{
+    display:flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+  }
+  .schedule-add-row select,
+  .schedule-add-row input[type=time]{
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Assistant';
+    font-size: 14.5px;
+    font-weight: 600;
+    padding: 11px 14px;
+    border-radius: var(--radius);
+    outline: none;
+  }
+  .schedule-add-row select{ flex: 1; min-width: 120px; }
+  .schedule-add-row input[type=time]{ flex: 1; min-width: 110px; }
+  .schedule-add-row select:focus,
+  .schedule-add-row input[type=time]:focus{ border-color: var(--goal-a); }
+  #scheduleHour, #scheduleMinute{ flex: 0 0 68px; min-width: 68px; text-align: center; }
+  .schedule-colon{ display:flex; align-items:center; color: var(--text-faint); font-weight:700; }
+
+  .schedule-add-btn{
+    border: none;
+    background: var(--goal-a);
+    color: #0e1013;
+    font-family:'Rubik'; font-weight: 800; font-size: 14px;
+    padding: 11px 20px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: filter .15s, transform .15s;
+  }
+  .schedule-add-btn:hover{ filter: brightness(1.08); transform: translateY(-1px); }
+
+  .schedule-list{ display:flex; flex-direction:column; gap: 8px; }
+  .schedule-empty{ color: var(--text-faint); font-size: 13.5px; padding: 8px 2px; }
+  .schedule-item{
+    display:flex; align-items:center; justify-content: space-between;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 11px 16px;
+  }
+  .schedule-item .sch-info{
+    display:flex; align-items:center; gap:10px;
+    font-family:'Rubik'; font-weight: 700; font-size: 14.5px;
+  }
+  .schedule-item .sch-day{ color: var(--goal-a); }
+  .schedule-item .sch-time{ color: var(--text-dim); font-family:'Assistant'; font-weight:600; }
+  .schedule-item .sch-remove{
+    background: none; border: none; color: var(--text-faint);
+    font-size: 17px; cursor: pointer; line-height:1; padding: 4px 8px;
+    border-radius: 8px; transition: all .15s;
+  }
+  .schedule-item .sch-remove:hover{ color: #ff6b6b; background: #ff6b6b1a; }
+
+  .generate-btn{
+    width: 100%;
+    margin-top: 24px;
+    border: none;
+    background: var(--goal-a);
+    color: #0e1013;
+    font-family:'Rubik'; font-weight: 800; font-size: 16px;
+    padding: 15px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: transform .15s, filter .15s;
+  }
+  .generate-btn:hover{ filter: brightness(1.08); transform: translateY(-1px); }
+  .generate-btn:active{ transform: translateY(0); }
+
+  /* ---------- RESULTS ---------- */
+  .placeholder{
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; gap: 14px;
+    min-height: 420px;
+    color: var(--text-faint);
+    border: 1px dashed var(--border);
+    border-radius: var(--radius-lg);
+  }
+  .placeholder .big{ font-size: 42px; }
+  .placeholder p{ max-width: 300px; font-size: 14px; line-height:1.6; margin:0; }
+
+  .back-btn{
+    display:inline-flex; align-items:center; gap:8px;
+    align-self: flex-start;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-family: 'Assistant'; font-weight: 700; font-size: 13.5px;
+    padding: 9px 16px;
+    border-radius: 100px;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .back-btn:hover{
+    border-color: var(--goal-a);
+    color: var(--text);
+  }
+  .back-btn svg{ transform: scaleX(-1); flex-shrink:0; }
+
+  .results{ display:none; flex-direction:column; gap: 20px; }
+  .results.show{ display:flex; }
+
+  .stat-row{
+    display:grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+  @media (max-width: 700px){ .stat-row{ grid-template-columns: 1fr 1fr; } }
+  .stat{
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+  }
+  .stat .s-label{ font-size: 12px; color: var(--text-faint); font-weight:600; margin-bottom:6px; }
+  .stat .s-value{ font-family:'Rubik'; font-weight:800; font-size: 24px; }
+  .stat .s-value small{ font-size: 13px; font-weight:600; color: var(--text-dim); }
+  .stat .s-source{ font-size: 11px; color: var(--text-faint); margin-top: 5px; line-height:1.4; }
+  .stat.protein .s-value{ color: #7ea8ff; }
+  .stat.carbs .s-value{ color: #ffd166; }
+  .stat.fat .s-value{ color: #ff8fa3; }
+  .stat.kcal .s-value{ color: var(--goal-a); }
+
+  .ring-panel{
+    display:flex; align-items:center; gap: 26px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 22px 26px;
+    flex-wrap: wrap;
+  }
+  .ring-legend{ display:flex; flex-direction:column; gap: 10px; flex:1; min-width: 200px; }
+  .legend-item{ display:flex; align-items:center; gap:10px; font-size:14px; }
+  .legend-dot{ width:10px; height:10px; border-radius:3px; flex-shrink:0; }
+  .legend-item b{ font-family:'Rubik'; }
+
+  .meal-plan{ display:flex; flex-direction:column; gap: 14px; }
+  .meal-plan h2{ font-family:'Rubik'; font-size: 20px; margin: 6px 0 0; }
+  .meal-card{
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+  }
+  .meal-head{
+    display:flex; justify-content: space-between; align-items:center;
+    margin-bottom: 12px;
+  }
+  .meal-head .m-name{ font-family:'Rubik'; font-weight:700; font-size:16px; }
+  .meal-head .m-kcal{
+    font-size: 12.5px; font-weight:700; color: var(--goal-a);
+    background: var(--goal-a-soft); padding: 4px 10px; border-radius: 100px;
+  }
+  .meal-items{ display:flex; flex-direction: column; gap:7px; }
+  .meal-item{
+    display:flex; justify-content: space-between;
+    font-size: 14.5px; color: var(--text-dim);
+    padding-bottom: 7px;
+    border-bottom: 1px solid var(--border);
+  }
+  .meal-item:last-child{ border-bottom:none; padding-bottom:0; }
+  .meal-item .qty{ color: var(--text); font-weight:600; }
+
+  .disclaimer{
+    font-size: 12.5px; color: var(--text-faint); line-height:1.7;
+    border-top: 1px solid var(--border); padding-top: 16px; margin-top: 4px;
+  }
+
+  ::selection{ background: var(--goal-a); color:#0e1013; }
+
+  /* ---------- MOBILE ---------- */
+  html{ overflow-x: hidden; }
+  body{ overflow-x: hidden; }
+
+  @media (max-width: 640px){
+    .wrap{ padding: 24px 16px 60px; }
+    .card{ padding: 18px; }
+    .layout{ gap: 16px; }
+    .two-col-grid{ gap: 16px; margin-top: 16px; }
+
+    .hero{ gap: 16px; padding-bottom: 22px; margin-bottom: 24px; }
+    .hero-lockup{ gap: 14px; }
+    .hero-meter{ width: 88px; height: 88px; }
+    .sub{ font-size: 15px; max-width: 100%; }
+    .eyebrow{ font-size: 11px; padding: 6px 12px; }
+
+    .row2{ gap: 10px; }
+    .goal-cards{ gap: 8px; }
+
+    /* prevent iOS Safari from auto-zooming when focusing form controls */
+    input[type=number],
+    input[type=text],
+    select,
+    textarea,
+    .protein-search,
+    .schedule-add-row select{
+      font-size: 16px;
+    }
+
+    #scheduleHour, #scheduleMinute{ flex: 0 0 60px; min-width: 60px; }
+    .schedule-add-row{ gap: 8px; }
+    .schedule-add-row select#scheduleDay{ flex: 1 1 100%; order: -1; }
+    .schedule-add-btn{ flex: 1 1 100%; }
+
+    .workout-grid{ grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    .protein-table td, .protein-table th{ padding: 9px 10px; font-size: 13.5px; }
+
+    .stat{ padding: 12px; }
+    .stat .s-value{ font-size: 20px; }
+
+    .ring-panel{ padding: 18px; gap: 18px; }
+    .ring-panel svg{ width: 120px; height: 120px; }
+
+    .meal-card{ padding: 14px 16px; }
+    .back-btn{ font-size: 12.5px; padding: 8px 14px; }
+  }
+
+  @media (max-width: 460px){
+    .workout-grid{ grid-template-columns: 1fr; }
+    .row2{ grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body data-goal="none">
+<div class="grid-overlay"></div>
+<div class="wrap">
+
+  <div class="hero">
+    <div class="hero-lockup">
+      <svg class="lifter-figure" width="110" height="143" viewBox="0 0 200 260" fill="none" aria-hidden="true">
+        <!-- legs -->
+        <polygon points="72,150 100,150 96,250 66,250" fill="var(--text)"/>
+        <polygon points="100,150 128,150 134,250 104,250" fill="var(--text)"/>
+        <rect x="58" y="247" width="44" height="11" rx="4" fill="var(--text)"/>
+        <rect x="98" y="247" width="44" height="11" rx="4" fill="var(--text)"/>
+        <line x1="82" y1="165" x2="74" y2="235" stroke="var(--bg)" stroke-width="4" stroke-linecap="round" opacity="0.3"/>
+        <line x1="118" y1="165" x2="126" y2="235" stroke="var(--bg)" stroke-width="4" stroke-linecap="round" opacity="0.3"/>
+        <!-- torso -->
+        <polygon points="50,54 150,54 128,145 72,145" fill="var(--text)"/>
+        <rect x="72" y="140" width="56" height="11" rx="4" fill="var(--bg)" opacity="0.45"/>
+        <ellipse cx="78" cy="78" rx="20" ry="13" fill="var(--bg)" opacity="0.22"/>
+        <ellipse cx="122" cy="78" rx="20" ry="13" fill="var(--bg)" opacity="0.22"/>
+        <rect x="88" y="99" width="14" height="11" rx="3" fill="var(--bg)" opacity="0.28"/>
+        <rect x="104" y="99" width="14" height="11" rx="3" fill="var(--bg)" opacity="0.28"/>
+        <rect x="87" y="113" width="15" height="11" rx="3" fill="var(--bg)" opacity="0.28"/>
+        <rect x="104" y="113" width="15" height="11" rx="3" fill="var(--bg)" opacity="0.28"/>
+        <rect x="86" y="127" width="16" height="11" rx="3" fill="var(--bg)" opacity="0.28"/>
+        <rect x="104" y="127" width="16" height="11" rx="3" fill="var(--bg)" opacity="0.28"/>
+        <!-- neck + head -->
+        <rect x="91" y="40" width="18" height="14" rx="2" fill="var(--text)"/>
+        <circle cx="100" cy="25" r="17" fill="var(--text)"/>
+        <!-- shoulders + arms -->
+        <circle cx="58" cy="64" r="18" fill="var(--text)"/>
+        <circle cx="142" cy="64" r="18" fill="var(--text)"/>
+        <path d="M58,66 Q40,42 55,23" stroke="var(--text)" stroke-width="24" stroke-linecap="round" fill="none"/>
+        <path d="M142,66 Q160,42 145,23" stroke="var(--text)" stroke-width="24" stroke-linecap="round" fill="none"/>
+        <circle cx="55" cy="21" r="12" fill="var(--text)"/>
+        <circle cx="145" cy="21" r="12" fill="var(--text)"/>
+        <!-- barbell -->
+        <rect x="25" y="15" width="150" height="8" rx="4" fill="var(--goal-a)"/>
+        <circle cx="20" cy="19" r="24" fill="var(--goal-a)"/>
+        <circle cx="20" cy="19" r="9" fill="var(--bg)"/>
+        <circle cx="180" cy="19" r="24" fill="var(--goal-a)"/>
+        <circle cx="180" cy="19" r="9" fill="var(--bg)"/>
+      </svg>
+      <div class="hero-copy">
+        <div class="eyebrow">
+          <svg class="eyebrow-icon" width="15" height="15" viewBox="0 0 48 48" fill="none"><rect x="3" y="19" width="7" height="10" rx="1.5" fill="currentColor"/><rect x="10" y="16" width="4" height="16" rx="1" fill="currentColor"/><rect x="14" y="21" width="20" height="6" rx="1.5" fill="currentColor"/><rect x="34" y="16" width="4" height="16" rx="1" fill="currentColor"/><rect x="38" y="19" width="7" height="10" rx="1.5" fill="currentColor"/></svg>
+          תזונה מותאמת אישית · מבוסס נתונים
+        </div>
+        <h1 class="tough"><span class="tough-icon"><svg width="40" height="40" viewBox="0 0 48 48" fill="none"><rect x="2" y="17" width="8" height="14" rx="2" fill="currentColor"/><rect x="10" y="13" width="5" height="22" rx="1.5" fill="currentColor"/><rect x="15" y="20" width="18" height="8" rx="2" fill="currentColor"/><rect x="33" y="13" width="5" height="22" rx="1.5" fill="currentColor"/><rect x="38" y="17" width="8" height="14" rx="2" fill="currentColor"/></svg></span>מייעץ <span id="heroWord" class="stamp">כושר</span> אישי</h1>
+        <div class="hazard-bar"></div>
+        <p class="sub">מזינים גובה, משקל ומטרה — והמערכת בונה תפריט תזונה יומי שמותאם בדיוק לצרכים שלך.</p>
+      </div>
+    </div>
+    <svg class="hero-meter" width="120" height="120" viewBox="0 0 120 120" id="heroRing">
+      <circle cx="60" cy="60" r="52" fill="none" stroke="#ffffff10" stroke-width="10"/>
+      <circle id="heroRingFill" cx="60" cy="60" r="52" fill="none" stroke="var(--goal-a)" stroke-width="10"
+        stroke-linecap="round" stroke-dasharray="327" stroke-dashoffset="327"
+        transform="rotate(-90 60 60)" style="transition: stroke-dashoffset 1s ease, stroke 0.5s ease"/>
+      <text x="60" y="56" text-anchor="middle" fill="var(--text)" font-family="Rubik" font-weight="800" font-size="20" id="heroRingText">--</text>
+      <text x="60" y="74" text-anchor="middle" fill="var(--text-faint)" font-family="Assistant" font-size="10">קק"ל / יום</text>
+    </svg>
+  </div>
+
+  <div class="layout">
+    <!-- FORM -->
+    <div class="card">
+      <h3 class="card-title">הנתונים שלך</h3>
+      <p class="card-desc">כל שדה משפיע ישירות על חישוב הקלוריות והמאקרו.</p>
+
+      <div class="row2">
+        <div class="field">
+          <label>משקל (ק"ג)</label>
+          <input type="number" id="weight" value="75" min="30" max="250">
+        </div>
+        <div class="field">
+          <label>גובה (ס"מ)</label>
+          <input type="number" id="height" value="175" min="120" max="230">
+        </div>
+      </div>
+
+      <div class="row2">
+        <div class="field">
+          <label>גיל</label>
+          <input type="number" id="age" value="28" min="14" max="90">
+        </div>
+        <div class="field">
+          <label>מין</label>
+          <div class="seg">
+            <button type="button" class="active" data-sex="m">גבר</button>
+            <button type="button" data-sex="f">אישה</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>רמת פעילות שבועית</label>
+        <div class="activity-list" id="activityList"></div>
+      </div>
+
+      <div class="field">
+        <label>המטרה שלי</label>
+        <div class="goal-cards">
+          <div class="goal-card" data-g="cut">
+            <span class="icon">🔥</span>
+            <div class="g-title">חיטוב</div>
+            <div class="g-sub">ירידה באחוזי שומן</div>
+          </div>
+          <div class="goal-card" data-g="bulk">
+            <span class="icon">💪</span>
+            <div class="g-title">מסת שריר</div>
+            <div class="g-sub">בניית שריר ועודף קלורי</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="reco-box" id="recoBox">
+        <div class="reco-label">המלצה קלורית יומית</div>
+        <div class="reco-value" id="recoValue">--</div>
+        <div class="reco-sub" id="recoSub">מלאו משקל, גובה, גיל, פעילות ומטרה כדי לראות המלצה</div>
+      </div>
+
+      <button class="generate-btn" id="generateBtn">בנה לי תפריט</button>
+    </div>
+
+    <!-- RESULTS -->
+    <div>
+      <div class="placeholder" id="placeholder">
+        <div class="big">🥗</div>
+        <p>מלאו את הנתונים משמאל ובחרו מטרה — התפריט היומי שלכם יופיע כאן, מותאם קלורית ומאקרואית בדיוק אליכם.</p>
+      </div>
+
+      <div class="results" id="results">
+        <button class="back-btn" id="backBtn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l-7 7 7 7"/><path d="M2 12h20"/></svg>
+          חזרה למסך הבית
+        </button>
+
+        <div class="stat-row">
+          <div class="stat kcal"><div class="s-label">יעד קלורי יומי</div><div class="s-value" id="statKcal">--</div><div class="s-source" id="statKcalSource"></div></div>
+          <div class="stat protein"><div class="s-label">חלבון</div><div class="s-value" id="statProtein">--<small> גרם</small></div></div>
+          <div class="stat carbs"><div class="s-label">פחמימות</div><div class="s-value" id="statCarbs">--<small> גרם</small></div></div>
+          <div class="stat fat"><div class="s-label">שומן</div><div class="s-value" id="statFat">--<small> גרם</small></div></div>
+        </div>
+
+        <div class="ring-panel">
+          <svg width="150" height="150" viewBox="0 0 150 150">
+            <circle cx="75" cy="75" r="64" fill="none" stroke="#ffffff10" stroke-width="14"/>
+            <circle id="ringProtein" cx="75" cy="75" r="64" fill="none" stroke="#7ea8ff" stroke-width="14" stroke-linecap="round" transform="rotate(-90 75 75)"/>
+            <circle id="ringCarbs" cx="75" cy="75" r="64" fill="none" stroke="#ffd166" stroke-width="14" stroke-linecap="round" transform="rotate(-90 75 75)"/>
+            <circle id="ringFat" cx="75" cy="75" r="64" fill="none" stroke="#ff8fa3" stroke-width="14" stroke-linecap="round" transform="rotate(-90 75 75)"/>
+          </svg>
+          <div class="ring-legend">
+            <div class="legend-item"><span class="legend-dot" style="background:#7ea8ff"></span> <b id="legProtein">--%</b>&nbsp; חלבון — הבסיס לשימור ובניית שריר</div>
+            <div class="legend-item"><span class="legend-dot" style="background:#ffd166"></span> <b id="legCarbs">--%</b>&nbsp; פחמימות — דלק לאימונים ולהתאוששות</div>
+            <div class="legend-item"><span class="legend-dot" style="background:#ff8fa3"></span> <b id="legFat">--%</b>&nbsp; שומן — תמיכה הורמונלית</div>
+          </div>
+        </div>
+
+        <div class="meal-plan">
+          <h2>התפריט היומי שלך</h2>
+          <div class="pantry-note" id="pantryNote" style="display:none;"></div>
+          <div id="mealCards"></div>
+        </div>
+
+        <div class="disclaimer">
+          התפריט מבוסס על חישוב אנרגטי כללי (Mifflin-St Jeor) ומיועד להתאמה כללית בלבד — אינו תחליף לייעוץ תזונאי/רפואי אישי. אם יש לך רקע רפואי, הפרעת אכילה או שינויים חדים במשקל, מומלץ להתייעץ עם דיאטן/ית קליני/ת לפני יישום.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="two-col-grid">
+    <div class="card workout-schedule-card">
+      <h3 class="card-title">לוח אימונים שבועי</h3>
+      <p class="card-desc">לכל יום אפשר להוסיף אימון — בחרו שעה (06:00–22:00) וקבוצת שרירים. אפשר להוסיף כמה אימונים באותו יום.</p>
+      <div class="workout-grid" id="workoutGrid"></div>
+    </div>
+
+    <div class="card protein-picker-card">
+      <h3 class="card-title">מקורות חלבון שאני אוהב</h3>
+      <p class="card-desc">חפשו וסמנו את המרכיבים שאתם אוהבים — הם ישמשו לבניית התפריט. פחמימות, שומן וירקות ייבחרו אוטומטית לפי המטרה שלכם.</p>
+
+      <input type="text" id="proteinSearch" class="protein-search" placeholder="חפשו מרכיב, לדוגמה: עוף, טונה, קוטג'...">
+
+      <div class="protein-table-wrap">
+        <table class="protein-table" id="proteinTable">
+          <thead>
+            <tr>
+              <th class="col-check"></th>
+              <th>מרכיב</th>
+              <th>קלוריות ל-100 גרם</th>
+              <th>חלבון ל-100 גרם</th>
+            </tr>
+          </thead>
+          <tbody id="proteinTableBody"></tbody>
+        </table>
+      </div>
+      <div class="pantry-hint" id="proteinTableEmpty" style="display:none;">לא נמצאו מרכיבים תואמים לחיפוש.</div>
+    </div>
+
+    <div class="card schedule-card">
+      <h3 class="card-title">לוח אימונים שבועי</h3>
+      <p class="card-desc">הוסיפו את הימים והשעות הקבועים שבהם אתם מתאמנים (כולל חצאי שעות). הרשימה נשמרת בדפדפן אצלכם.</p>
+
+      <div class="schedule-add-row">
+        <select id="scheduleDay"></select>
+        <select id="scheduleHour"></select>
+        <span class="schedule-colon">:</span>
+        <select id="scheduleMinute"></select>
+        <button type="button" id="scheduleAddBtn" class="schedule-add-btn">הוסף אימון</button>
+      </div>
+
+      <div class="schedule-list" id="scheduleList"></div>
+
+      <div class="pantry-note" id="scheduleHint" style="display:none;">
+        כדי לקבל בפועל תזכורת במייל 30 דקות לפני כל אימון, העתיקו את הרשימה הזו והדביקו אותה בצ'אט עם Claude — כך אפשר ליצור עבורכם את האירועים ביומן גוגל עם תזכורת אוטומטית.
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const activities = [
+  {id:1.2,   title:"פעילות מינימלית", sub:"עבודה יושבנית, כמעט ללא ספורט"},
+  {id:1.375, title:"פעילות קלה", sub:"אימונים 1–3 פעמים בשבוע"},
+  {id:1.55,  title:"פעילות בינונית", sub:"אימונים 3–5 פעמים בשבוע"},
+  {id:1.725, title:"פעילות גבוהה", sub:"אימונים 6–7 פעמים בשבוע"},
+  {id:1.9,   title:"פעילות גבוהה מאוד", sub:"אימונים יומיים + עבודה פיזית"}
+];
+
+const activityList = document.getElementById('activityList');
+activities.forEach((a,i)=>{
+  const el = document.createElement('label');
+  el.className = 'activity-opt' + (i===2?' active':'');
+  el.innerHTML = `<input type="radio" name="activity" value="${a.id}" ${i===2?'checked':''}>
+    <div><div class="a-title">${a.title}</div><div class="a-sub">${a.sub}</div></div>`;
+  activityList.appendChild(el);
+});
+activityList.addEventListener('change', ()=>{
+  document.querySelectorAll('.activity-opt').forEach(o=>o.classList.remove('active'));
+  document.querySelector('input[name=activity]:checked').closest('.activity-opt').classList.add('active');
+  updateRecommendation();
+});
+
+let sex = 'm';
+document.querySelectorAll('.seg button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.seg button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    sex = btn.dataset.sex;
+    updateRecommendation();
+  });
+});
+
+let goal = null;
+const heroWord = document.getElementById('heroWord');
+document.querySelectorAll('.goal-card').forEach(card=>{
+  card.addEventListener('click', ()=>{
+    document.querySelectorAll('.goal-card').forEach(c=>c.classList.remove('active'));
+    card.classList.add('active');
+    goal = card.dataset.g;
+    document.body.dataset.goal = goal;
+    heroWord.textContent = goal === 'cut' ? 'חיטוב' : 'מסת שריר';
+    updateRecommendation();
+
+    // if a plan was already generated, refresh it immediately to match the new goal
+    if(document.getElementById('results').classList.contains('show')){
+      generatePlan(false);
+    }
+  });
+});
+
+function updateRecommendation(){
+  const weight = parseFloat(document.getElementById('weight').value);
+  const height = parseFloat(document.getElementById('height').value);
+  const age = parseFloat(document.getElementById('age').value);
+  const activityEl = document.querySelector('input[name=activity]:checked');
+  const recoValue = document.getElementById('recoValue');
+  const recoSub = document.getElementById('recoSub');
+
+  if(!weight || !height || !age || !activityEl){
+    recoValue.innerHTML = '--';
+    recoSub.textContent = 'מלאו משקל, גובה, גיל, פעילות ומטרה כדי לראות המלצה';
+    return;
+  }
+
+  const activityFactor = parseFloat(activityEl.value);
+  let bmr;
+  if(sex === 'm') bmr = 10*weight + 6.25*height - 5*age + 5;
+  else bmr = 10*weight + 6.25*height - 5*age - 161;
+  const tdee = bmr * activityFactor;
+
+  let target, label;
+  if(goal === 'cut'){
+    target = tdee * 0.80;
+    label = 'לצורך חיטוב — גירעון קלורי מתון';
+  } else if(goal === 'bulk'){
+    target = tdee * 1.12;
+    label = 'לצורך מסת שריר — עודף קלורי מתון';
+  } else {
+    target = tdee;
+    label = 'לשימור המשקל הנוכחי — בחרו מטרה לדיוק נוסף';
+  }
+
+  target = Math.round(target/10)*10;
+  recoValue.innerHTML = `${target.toLocaleString()}<small> קק"ל ליום</small>`;
+  recoSub.textContent = label;
+}
+
+['weight','height','age'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', updateRecommendation);
+});
+
+updateRecommendation();
+
+// ---- Food templates (per meal, base grams at reference 2200 kcal / day) ----
+// Each item: name, base grams, kcal/100g, protein/100g, carbs/100g, fat/100g
+// ---- Pantry food database: per 100g values, keyword sets for Hebrew matching ----
+const pantryDB = [
+  // proteins
+  {name:"חזה עוף", cat:"protein", kcal:120, p:23, c:0, f:2.6, keys:["עוף","חזה עוף","פרגית","פילה עוף"], maxG:250},
+  {name:"חזה הודו", cat:"protein", kcal:110, p:24, c:0, f:1, keys:["הודו","חזה הודו"], maxG:250},
+  {name:"בשר בקר רזה / סטייק", cat:"protein", kcal:170, p:22, c:0, f:9, keys:["בקר","סטייק","אנטריקוט","פילה בקר"], maxG:230},
+  {name:"בשר טחון 10%", cat:"protein", kcal:176, p:20, c:0, f:10, keys:["בשר טחון","טחון","קציצות"], maxG:230},
+  {name:"סלמון", cat:"protein", kcal:208, p:20, c:0, f:13, keys:["סלמון"], maxG:220},
+  {name:"דג לבן", cat:"protein", kcal:110, p:22, c:0, f:2, keys:["דג","דג לבן","דניס","לברק","בקלה"], maxG:250},
+  {name:"טונה בשימורים", cat:"protein", kcal:116, p:26, c:0, f:1, keys:["טונה"], maxG:200},
+  {name:"ביצים שלמות", cat:"protein", kcal:155, p:13, c:1.1, f:11, keys:["ביצה","ביצים"], maxG:180},
+  {name:"חלבוני ביצה", cat:"protein", kcal:52, p:11, c:0.7, f:0.2, keys:["חלבון ביצה","חלבוני ביצה","חלבונים"], maxG:280},
+  {name:"קוטג' 5%", cat:"protein", kcal:98, p:11, c:3.4, f:5, keys:["קוטג","גבינת קוטג"], maxG:280},
+  {name:"יוגורט יווני", cat:"protein", kcal:97, p:9, c:4, f:5, keys:["יוגורט יווני","יוגורט"], maxG:320},
+  {name:"טופו", cat:"protein", kcal:76, p:8, c:1.9, f:4.8, keys:["טופו"], maxG:280},
+  {name:"עדשים מבושלות", cat:"protein", kcal:116, p:9, c:20, f:0.4, keys:["עדשים"], maxG:300},
+  {name:"חומוס גרגירים / קופסה", cat:"protein", kcal:164, p:9, c:27, f:2.6, keys:["חומוס גרגירים","גרגירי חומוס","שעועית חומוס"], maxG:280},
+  {name:"אבקת חלבון", cat:"protein", kcal:380, p:75, c:8, f:5, keys:["אבקת חלבון","אבקת וויי","וואי","protein powder"], maxG:60},
+  {name:"בשר עגל", cat:"protein", kcal:172, p:20, c:0, f:10, keys:["עגל","בשר עגל","שניצל עגל"], maxG:230},
+  {name:"לבנה", cat:"protein", kcal:120, p:5, c:4, f:9, keys:["לבנה"], maxG:250},
+  {name:"ריקוטה", cat:"protein", kcal:174, p:11, c:3, f:13, keys:["ריקוטה"], maxG:250},
+  {name:"גבינה צהובה 9%", cat:"protein", kcal:264, p:27, c:1, f:18, keys:["גבינה צהובה","גאודה","עמק","צפתית"], maxG:150},
+  {name:"שעועית שחורה", cat:"protein", kcal:127, p:8.7, c:23, f:0.5, keys:["שעועית שחורה","שעועית לבנה","שעועית"], maxG:300},
+  {name:"אדממה", cat:"protein", kcal:121, p:11, c:10, f:5, keys:["אדממה","edamame"], maxG:250},
+  {name:"טמפה", cat:"protein", kcal:192, p:20, c:9, f:11, keys:["טמפה","tempeh"], maxG:250},
+  {name:"סייטן", cat:"protein", kcal:120, p:21, c:4, f:1.9, keys:["סייטן","seitan"], maxG:250},
+  {name:"סרדינים בשימורים", cat:"protein", kcal:208, p:25, c:0, f:11, keys:["סרדינים"], maxG:180},
+  {name:"חלב 3%", cat:"protein", kcal:60, p:3.2, c:4.8, f:3.2, keys:["חלב"], maxG:400},
+  {name:"גבינה בולגרית", cat:"protein", kcal:224, p:14, c:1, f:18, keys:["גבינה בולגרית","בולגרית"], maxG:150},
+  {name:"פסטרמת הודו", cat:"protein", kcal:104, p:17, c:2, f:3, keys:["פסטרמה","פסטרמת הודו","נקניק הודו"], maxG:150},
+  {name:"נקניקיות עוף / הודו", cat:"protein", kcal:180, p:14, c:3, f:12, keys:["נקניקיה","נקניקיות עוף","נקניקיות הודו"], maxG:150},
+  {name:"סלמון מעושן", cat:"protein", kcal:117, p:18, c:0, f:4.5, keys:["סלמון מעושן"], maxG:150},
+  {name:"מקרל", cat:"protein", kcal:205, p:19, c:0, f:14, keys:["מקרל"], maxG:200},
+  {name:"פורל", cat:"protein", kcal:148, p:20, c:0, f:7, keys:["פורל"], maxG:220},
+  {name:"הודו טחון / עוף טחון", cat:"protein", kcal:143, p:17, c:0, f:8, keys:["הודו טחון","עוף טחון"], maxG:230},
+  {name:"חטיף חלבון", cat:"protein", kcal:350, p:30, c:35, f:10, keys:["חטיף חלבון","protein bar"], maxG:60},
+  {name:"חלב סויה", cat:"protein", kcal:33, p:3.3, c:1.8, f:1.8, keys:["חלב סויה","סויה"], maxG:400},
+  {name:"אנשובי", cat:"protein", kcal:131, p:20, c:0, f:5, keys:["אנשובי"], maxG:80},
+  {name:"חומוס ממרח", cat:"protein", kcal:166, p:7.9, c:14.3, f:9.6, keys:["חומוס ממרח","חומוס"], maxG:200},
+  {name:"פלאפל", cat:"protein", kcal:333, p:13.3, c:31, f:18, keys:["פלאפל"], maxG:150},
+  {name:"רוסטביף", cat:"protein", kcal:143, p:22, c:1, f:5, keys:["רוסטביף"], maxG:150},
+  {name:"נקניק בקר / סלאמי", cat:"protein", kcal:250, p:15, c:2, f:20, keys:["נקניק בקר","סלאמי","סלמי"], maxG:100},
+  {name:"גבינת שמנת מופחתת שומן", cat:"protein", kcal:150, p:8, c:4, f:12, keys:["גבינת שמנת","פילדלפיה"], maxG:150},
+  {name:"אבקת חלבון טבעוני", cat:"protein", kcal:370, p:80, c:5, f:3, keys:["אבקת חלבון טבעוני","אבקת אפונה","pea protein"], maxG:60},
+  {name:"בשר טלה", cat:"protein", kcal:294, p:25, c:0, f:21, keys:["טלה","כבש"], maxG:200},
+  {name:"יוגורט טבעי 3%", cat:"protein", kcal:61, p:3.5, c:4.7, f:3.3, keys:["יוגורט טבעי","יוגורט לבן"], maxG:350},
+  {name:"טונה טרייה / סטייק טונה", cat:"protein", kcal:144, p:23, c:0, f:5, keys:["טונה טרייה","סטייק טונה"], maxG:220},
+  {name:"שניצל עוף", cat:"protein", kcal:280, p:18, c:15, f:16, keys:["שניצל"], maxG:200},
+  {name:"שוקיים עוף", cat:"protein", kcal:172, p:21, c:0, f:9.5, keys:["שוק עוף","שוקיים עוף","ירך עוף"], maxG:230},
+  {name:"כבד עוף", cat:"protein", kcal:172, p:24, c:0.7, f:6.5, keys:["כבד עוף"], maxG:150},
+  {name:"פסטרמת בקר", cat:"protein", kcal:147, p:21, c:2, f:6, keys:["פסטרמת בקר"], maxG:150},
+  {name:"קבב בקר / טלה", cat:"protein", kcal:250, p:17, c:3, f:19, keys:["קבב"], maxG:180},
+  {name:"סקיר", cat:"protein", kcal:63, p:11, c:4, f:0.2, keys:["סקיר","skyr"], maxG:350},
+  {name:"חלבון סויה מבודד", cat:"protein", kcal:335, p:80, c:8, f:1, keys:["חלבון סויה מבודד","soy protein"], maxG:60},
+  {name:"פטה", cat:"protein", kcal:264, p:14, c:4, f:21, keys:["פטה"], maxG:150},
+  {name:"גבינת עזים", cat:"protein", kcal:264, p:18, c:0.5, f:21, keys:["גבינת עזים"], maxG:150},
+  {name:"גבינת עמק 5%", cat:"protein", kcal:220, p:28, c:1, f:12, keys:["גבינת עמק 5%"], maxG:150},
+  {name:"חלב 1%", cat:"protein", kcal:42, p:3.4, c:5, f:1, keys:["חלב 1%","חלב דל שומן"], maxG:400},
+  {name:"יוגורט לשתייה", cat:"protein", kcal:65, p:2.9, c:8, f:1.5, keys:["אקטימל","יוגורט לשתייה"], maxG:250},
+  {name:"חלמון ביצה", cat:"protein", kcal:322, p:16, c:3.6, f:27, keys:["חלמון"], maxG:60},
+  {name:"טונה בשמן זית", cat:"protein", kcal:198, p:25, c:0, f:10, keys:["טונה בשמן"], maxG:200},
+  {name:"פולי סויה מבושלים", cat:"protein", kcal:173, p:16.6, c:9.9, f:9, keys:["פולי סויה","סויה מבושלת"], maxG:250},
+  {name:"יוגורט חלבון מוכן", cat:"protein", kcal:90, p:10, c:8, f:2, keys:["פודינג חלבון","יוגורט חלבון"], maxG:250},
+  {name:"כבד בקר", cat:"protein", kcal:135, p:20, c:3.9, f:3.6, keys:["כבד בקר"], maxG:180},
+  {name:"חזה ברווז", cat:"protein", kcal:140, p:19, c:0, f:7, keys:["ברווז","חזה ברווז"], maxG:200},
+  {name:"כרעי עוף", cat:"protein", kcal:216, p:19, c:0, f:15, keys:["כרעי עוף","שוק ועוף"], maxG:230},
+  {name:"כרעי הודו", cat:"protein", kcal:177, p:20, c:0, f:10, keys:["כרעי הודו"], maxG:230},
+  {name:"קורנביף", cat:"protein", kcal:250, p:19, c:1, f:19, keys:["קורנביף"], maxG:150},
+  {name:"פסטרמת עוף", cat:"protein", kcal:110, p:18, c:2, f:3, keys:["פסטרמת עוף"], maxG:150},
+  {name:"שווארמה עוף / הודו", cat:"protein", kcal:220, p:20, c:2, f:14, keys:["שווארמה"], maxG:220},
+  {name:"קציצות דג", cat:"protein", kcal:110, p:11, c:8, f:4, keys:["קציצות דג","גפילטע פיש"], maxG:250},
+  {name:"דג הרינג", cat:"protein", kcal:158, p:18, c:0, f:9, keys:["הרינג"], maxG:180},
+  {name:"דג אמנון", cat:"protein", kcal:96, p:20, c:0, f:1.7, keys:["אמנון","טילפיה"], maxG:250},
+  {name:"דג בורי", cat:"protein", kcal:117, p:19, c:0, f:4, keys:["בורי"], maxG:250},
+  {name:"ביצי שליו", cat:"protein", kcal:158, p:13, c:0.4, f:11, keys:["ביצי שליו","שליו"], maxG:150},
+  {name:"גבינת מוצרלה", cat:"protein", kcal:280, p:28, c:3, f:17, keys:["מוצרלה"], maxG:150},
+  {name:"גבינת קשקבל", cat:"protein", kcal:346, p:25, c:2, f:27, keys:["קשקבל"], maxG:120},
+  {name:"גבינת פרמזן", cat:"protein", kcal:392, p:35, c:4, f:26, keys:["פרמזן"], maxG:50},
+  {name:"חלב עיזים", cat:"protein", kcal:69, p:3.6, c:4.5, f:4.1, keys:["חלב עיזים"], maxG:400},
+  {name:"קפיר", cat:"protein", kcal:41, p:3.3, c:4.8, f:1, keys:["קפיר"], maxG:400},
+  {name:"עדשים כתומות מבושלות", cat:"protein", kcal:116, p:9, c:20, f:0.4, keys:["עדשים כתומות"], maxG:300},
+  {name:"אפונה ירוקה מבושלת", cat:"protein", kcal:81, p:5.4, c:14, f:0.4, keys:["אפונה ירוקה","אפונה"], maxG:300},
+  {name:"שעועית לבנה מבושלת", cat:"protein", kcal:139, p:9.7, c:25, f:0.5, keys:["שעועית לבנה"], maxG:300},
+  {name:"פול מבושל", cat:"protein", kcal:110, p:7.6, c:19.7, f:0.4, keys:["פול","פולים"], maxG:300},
+  {name:"זרעי דלעת", cat:"protein", kcal:559, p:30, c:11, f:49, keys:["זרעי דלעת","גרעיני דלעת"], maxG:40},
+  {name:"זרעי חמנייה", cat:"protein", kcal:584, p:21, c:20, f:51, keys:["זרעי חמנייה","גרעיני חמה"], maxG:40},
+  {name:"קציצות בקר / המבורגר", cat:"protein", kcal:250, p:18, c:5, f:18, keys:["המבורגר","קציצות בקר"], maxG:200},
+  {name:"נקניקיית בקר", cat:"protein", kcal:280, p:12, c:3, f:25, keys:["נקניקיית בקר","נקניקיה בקר"], maxG:150},
+  {name:"כבד אווז", cat:"protein", kcal:400, p:11, c:5, f:39, keys:["כבד אווז","פואה גרא"], maxG:60},
+  {name:"חזה אווז", cat:"protein", kcal:161, p:23, c:0, f:7, keys:["חזה אווז"], maxG:200},
+  {name:"דג סול", cat:"protein", kcal:86, p:18, c:0, f:1, keys:["סול"], maxG:250},
+  {name:"חלב מועשר בחלבון", cat:"protein", kcal:60, p:6, c:6, f:0.5, keys:["חלב מועשר בחלבון","חלב חלבון"], maxG:400},
+  {name:"קוטג' 3%", cat:"protein", kcal:81, p:12, c:3.4, f:1.5, keys:["קוטג' 3%","קוטג' דל שומן"], maxG:300},
+  {name:"צלי בקר / אסאדו", cat:"protein", kcal:215, p:26, c:0, f:12, keys:["צלי בקר","אסאדו"], maxG:230},
+
+  // carbs
+  {name:"אורז לבן מבושל", cat:"carb", kcal:130, p:2.4, c:28, f:0.3, keys:["אורז לבן","אורז"], maxG:300},
+  {name:"אורז מלא מבושל", cat:"carb", kcal:112, p:2.6, c:23, f:0.9, keys:["אורז מלא"], maxG:300},
+  {name:"קינואה מבושלת", cat:"carb", kcal:120, p:4.4, c:21, f:1.9, keys:["קינואה"], maxG:300},
+  {name:"פסטה מבושלת", cat:"carb", kcal:158, p:5.8, c:31, f:0.9, keys:["פסטה","מקרוני","ספגטי"], maxG:300},
+  {name:"תפוח אדמה אפוי", cat:"carb", kcal:93, p:2.5, c:21, f:0.1, keys:["תפוח אדמה","תפו\"א","תפוא"], maxG:350},
+  {name:"בטטה אפויה", cat:"carb", kcal:90, p:2, c:21, f:0.1, keys:["בטטה"], maxG:350},
+  {name:"שיבולת שועל", cat:"carb", kcal:389, p:17, c:66, f:7, keys:["שיבולת שועל","קוואקר","שבולת שועל"], maxG:100},
+  {name:"לחם מלא", cat:"carb", kcal:247, p:9, c:41, f:3.5, keys:["לחם מלא","לחם"], maxG:150},
+  {name:"פיתה", cat:"carb", kcal:275, p:9, c:55, f:1.5, keys:["פיתה"], maxG:160},
+  {name:"קוסקוס מבושל", cat:"carb", kcal:112, p:3.8, c:23, f:0.2, keys:["קוסקוס"], maxG:300},
+  {name:"בורגול מבושל", cat:"carb", kcal:83, p:3, c:18.6, f:0.2, keys:["בורגול"], maxG:300},
+
+  // fats
+  {name:"שמן זית", cat:"fat", kcal:884, p:0, c:0, f:100, keys:["שמן זית","שמן"], maxG:15},
+  {name:"טחינה גולמית", cat:"fat", kcal:595, p:17, c:21, f:53, keys:["טחינה"], maxG:25},
+  {name:"חמאת בוטנים", cat:"fat", kcal:588, p:25, c:20, f:50, keys:["חמאת בוטנים"], maxG:25},
+  {name:"אגוזים מעורבים", cat:"fat", kcal:607, p:15, c:14, f:56, keys:["אגוזים","שקדים","בוטנים","קשיו"], maxG:35},
+  {name:"אבוקדו", cat:"fat", kcal:160, p:2, c:8.5, f:14.7, keys:["אבוקדו"], maxG:100},
+
+  // veg
+  {name:"עגבניות", cat:"veg", kcal:18, p:0.9, c:3.9, f:0.2, keys:["עגבניה","עגבניות"]},
+  {name:"מלפפונים", cat:"veg", kcal:15, p:0.7, c:3.6, f:0.1, keys:["מלפפון","מלפפונים"]},
+  {name:"פלפלים", cat:"veg", kcal:31, p:1, c:6, f:0.3, keys:["פלפל","פלפלים"]},
+  {name:"חסה / סלט ירוק", cat:"veg", kcal:15, p:1.4, c:2.9, f:0.2, keys:["חסה","סלט ירוק"]},
+  {name:"ברוקולי", cat:"veg", kcal:34, p:2.8, c:7, f:0.4, keys:["ברוקולי"]},
+  {name:"גזר", cat:"veg", kcal:41, p:0.9, c:10, f:0.2, keys:["גזר"]},
+  {name:"תרד", cat:"veg", kcal:23, p:2.9, c:3.6, f:0.4, keys:["תרד"]},
+  {name:"קישוא", cat:"veg", kcal:17, p:1.2, c:3.1, f:0.3, keys:["קישוא","קישואים"]},
+  {name:"בצל", cat:"veg", kcal:40, p:1.1, c:9.3, f:0.1, keys:["בצל"]},
+];
+
+const CAT_FALLBACK_LIST = {
+  cut: {
+    protein: [
+      pantryDB.find(f=>f.name==="חזה עוף"),
+      pantryDB.find(f=>f.name==="חלבוני ביצה"),
+      pantryDB.find(f=>f.name==="טונה בשימורים"),
+      pantryDB.find(f=>f.name==="קוטג' 5%"),
+      pantryDB.find(f=>f.name==="דג לבן"),
+    ],
+    carb: [
+      pantryDB.find(f=>f.name==="אורז לבן מבושל"),
+      pantryDB.find(f=>f.name==="קינואה מבושלת"),
+      pantryDB.find(f=>f.name==="בטטה אפויה"),
+      pantryDB.find(f=>f.name==="קוסקוס מבושל"),
+    ],
+    fat: [
+      pantryDB.find(f=>f.name==="שמן זית"),
+      pantryDB.find(f=>f.name==="אבוקדו"),
+      pantryDB.find(f=>f.name==="אגוזים מעורבים"),
+    ],
+    veg: [
+      pantryDB.find(f=>f.name==="עגבניות"),
+      pantryDB.find(f=>f.name==="מלפפונים"),
+      pantryDB.find(f=>f.name==="פלפלים"),
+      pantryDB.find(f=>f.name==="ברוקולי"),
+      pantryDB.find(f=>f.name==="גזר"),
+    ],
+  },
+  bulk: {
+    protein: [
+      pantryDB.find(f=>f.name==="חזה עוף"),
+      pantryDB.find(f=>f.name==="ביצים שלמות"),
+      pantryDB.find(f=>f.name==="בשר בקר רזה / סטייק"),
+      pantryDB.find(f=>f.name==="יוגורט יווני"),
+    ],
+    carb: [
+      pantryDB.find(f=>f.name==="שיבולת שועל"),
+      pantryDB.find(f=>f.name==="אורז לבן מבושל"),
+      pantryDB.find(f=>f.name==="פסטה מבושלת"),
+      pantryDB.find(f=>f.name==="בטטה אפויה"),
+    ],
+    fat: [
+      pantryDB.find(f=>f.name==="חמאת בוטנים"),
+      pantryDB.find(f=>f.name==="אגוזים מעורבים"),
+      pantryDB.find(f=>f.name==="טחינה גולמית"),
+      pantryDB.find(f=>f.name==="אבוקדו"),
+    ],
+    veg: [
+      pantryDB.find(f=>f.name==="עגבניות"),
+      pantryDB.find(f=>f.name==="מלפפונים"),
+      pantryDB.find(f=>f.name==="פלפלים"),
+      pantryDB.find(f=>f.name==="ברוקולי"),
+      pantryDB.find(f=>f.name==="גזר"),
+    ],
+  },
+};
+const CAT_LABEL = {protein:"חלבון", carb:"פחמימה", fat:"שומן", veg:"ירק"};
+
+// cooking-style phrases used to vary a repeated ingredient across meals so the
+// same food doesn't read as the exact same dish twice
+const PREP_STYLES = {
+  protein: ["בתיבול ים תיכוני", "עם ירקות ועשבי תיבול", "בסלט", "עם לימון ובצל ירוק", "עם שום ופפריקה"],
+  carb: ["מבושל", "אפוי", "מוקפץ עם ירקות", "עם עשבי תיבול"],
+};
+
+function displayName(food, occurrenceIndex){
+  if(occurrenceIndex === 0) return food.name;
+  const styles = PREP_STYLES[food.cat];
+  if(!styles) return food.name;
+  const style = styles[(occurrenceIndex-1) % styles.length];
+  return `${food.name} (${style})`;
+}
+
+function normalizeHeb(s){
+  return s.replace(/["'׳״]/g,'').replace(/\s+/g,' ').trim().toLowerCase();
+}
+
+// ---- Protein source picker table ----
+const selectedProteins = new Set();
+
+function renderProteinTable(filterText){
+  const tbody = document.getElementById('proteinTableBody');
+  const emptyMsg = document.getElementById('proteinTableEmpty');
+  const norm = normalizeHeb(filterText || '');
+  tbody.innerHTML = '';
+
+  const proteinFoods = pantryDB.filter(f=>f.cat==='protein');
+  const filtered = proteinFoods.filter(f=>{
+    if(!norm) return true;
+    if(normalizeHeb(f.name).includes(norm)) return true;
+    return f.keys.some(k=>normalizeHeb(k).includes(norm));
+  });
+
+  emptyMsg.style.display = filtered.length ? 'none' : 'block';
+
+  filtered.forEach(food=>{
+    const tr = document.createElement('tr');
+    const isPicked = selectedProteins.has(food.name);
+    if(isPicked) tr.classList.add('picked');
+    tr.innerHTML = `
+      <td class="col-check"><input type="checkbox" data-food="${food.name}" ${isPicked ? 'checked' : ''}></td>
+      <td class="p-name">${food.name}</td>
+      <td>${food.kcal}</td>
+      <td>${food.p} גרם</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+document.getElementById('proteinTableBody').addEventListener('click', (e)=>{
+  const tr = e.target.closest('tr');
+  if(!tr) return;
+  const checkbox = tr.querySelector('input[type=checkbox]');
+  if(e.target !== checkbox) checkbox.checked = !checkbox.checked;
+
+  const foodName = checkbox.dataset.food;
+  if(checkbox.checked){
+    selectedProteins.add(foodName);
+    tr.classList.add('picked');
+  } else {
+    selectedProteins.delete(foodName);
+    tr.classList.remove('picked');
+  }
+});
+
+document.getElementById('proteinSearch').addEventListener('input', (e)=>{
+  renderProteinTable(e.target.value);
+});
+
+renderProteinTable('');
+
+// ---- Weekly training schedule ----
+const DAY_NAMES = ["ראשון","שני","שלישי","רביעי","חמישי","שישי","שבת"];
+
+const scheduleDaySelect = document.getElementById('scheduleDay');
+DAY_NAMES.forEach((d,i)=>{
+  const opt = document.createElement('option');
+  opt.value = i;
+  opt.textContent = `יום ${d}`;
+  scheduleDaySelect.appendChild(opt);
+});
+
+const scheduleHourSelect = document.getElementById('scheduleHour');
+for(let h=0; h<24; h++){
+  const opt = document.createElement('option');
+  const hh = String(h).padStart(2,'0');
+  opt.value = hh;
+  opt.textContent = hh;
+  if(h===18) opt.selected = true;
+  scheduleHourSelect.appendChild(opt);
+}
+
+const scheduleMinuteSelect = document.getElementById('scheduleMinute');
+['00','30'].forEach(mm=>{
+  const opt = document.createElement('option');
+  opt.value = mm;
+  opt.textContent = mm;
+  scheduleMinuteSelect.appendChild(opt);
+});
+
+function loadSchedule(){
+  try{
+    const raw = localStorage.getItem('trainingSchedule');
+    return raw ? JSON.parse(raw) : [];
+  } catch(e){ return []; }
+}
+function saveSchedule(list){
+  try{ localStorage.setItem('trainingSchedule', JSON.stringify(list)); } catch(e){}
+}
+
+let trainingSchedule = loadSchedule();
+
+function renderSchedule(){
+  trainingSchedule.sort((a,b)=> a.day - b.day || a.time.localeCompare(b.time));
+  const el = document.getElementById('scheduleList');
+  const hint = document.getElementById('scheduleHint');
+  el.innerHTML = '';
+
+  if(!trainingSchedule.length){
+    el.innerHTML = '<div class="schedule-empty">עדיין לא נוספו אימונים. הוסיפו את הראשון למעלה.</div>';
+    hint.style.display = 'none';
+    return;
+  }
+  hint.style.display = 'block';
+
+  trainingSchedule.forEach((entry, idx)=>{
+    const row = document.createElement('div');
+    row.className = 'schedule-item';
+    row.innerHTML = `
+      <div class="sch-info">
+        <span class="sch-day">יום ${DAY_NAMES[entry.day]}</span>
+        <span class="sch-time">${entry.time}</span>
+      </div>
+      <button type="button" class="sch-remove" data-idx="${idx}">✕</button>
+    `;
+    el.appendChild(row);
+  });
+}
+
+document.getElementById('scheduleAddBtn').addEventListener('click', ()=>{
+  const day = parseInt(document.getElementById('scheduleDay').value, 10);
+  const time = `${document.getElementById('scheduleHour').value}:${document.getElementById('scheduleMinute').value}`;
+  if(!time){ return; }
+  const exists = trainingSchedule.some(e=>e.day===day && e.time===time);
+  if(!exists){
+    trainingSchedule.push({day, time});
+    saveSchedule(trainingSchedule);
+    renderSchedule();
+  }
+});
+
+document.getElementById('scheduleList').addEventListener('click', (e)=>{
+  const btn = e.target.closest('.sch-remove');
+  if(!btn) return;
+  const idx = parseInt(btn.dataset.idx, 10);
+  trainingSchedule.splice(idx, 1);
+  saveSchedule(trainingSchedule);
+  renderSchedule();
+});
+
+renderSchedule();
+
+// ---- Weekly workout schedule builder ----
+const WORKOUT_DAYS = ["ראשון","שני","שלישי","רביעי","חמישי","שישי","שבת"];
+const WORKOUT_MUSCLES = ["חזה","גב","רגליים","כתפיים","ידיים","בטן / ליבה"];
+const WORKOUT_HOURS = [];
+for(let h=6; h<=22; h++){
+  WORKOUT_HOURS.push(String(h).padStart(2,'0') + ':00');
+}
+
+function createWorkoutRow(){
+  const row = document.createElement('div');
+  row.className = 'workout-row';
+
+  const removeBtn = document.createElement('div');
+  removeBtn.className = 'remove-row';
+  removeBtn.textContent = '×';
+  removeBtn.addEventListener('click', ()=> row.remove());
+
+  const hourSelect = document.createElement('select');
+  hourSelect.className = 'workout-hour';
+  WORKOUT_HOURS.forEach(h=>{
+    const opt = document.createElement('option');
+    opt.value = h;
+    opt.textContent = h;
+    hourSelect.appendChild(opt);
+  });
+
+  const muscleChips = document.createElement('div');
+  muscleChips.className = 'muscle-chips';
+  WORKOUT_MUSCLES.forEach(m=>{
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'muscle-chip';
+    chip.textContent = m;
+    chip.dataset.muscle = m;
+    chip.addEventListener('click', ()=> chip.classList.toggle('active'));
+    muscleChips.appendChild(chip);
+  });
+
+  row.appendChild(removeBtn);
+  row.appendChild(hourSelect);
+  row.appendChild(muscleChips);
+  return row;
+}
+
+function buildWorkoutGrid(){
+  const grid = document.getElementById('workoutGrid');
+  grid.innerHTML = '';
+
+  WORKOUT_DAYS.forEach(day=>{
+    const col = document.createElement('div');
+    col.className = 'workout-day';
+
+    const title = document.createElement('div');
+    title.className = 'workout-day-title';
+    title.textContent = day;
+
+    const rowsWrap = document.createElement('div');
+    rowsWrap.className = 'workout-rows';
+    rowsWrap.appendChild(createWorkoutRow());
+
+    const addBtn = document.createElement('button');
+    addBtn.type = 'button';
+    addBtn.className = 'add-workout-btn';
+    addBtn.textContent = '+ הוסף אימון';
+    addBtn.addEventListener('click', ()=> rowsWrap.appendChild(createWorkoutRow()));
+
+    col.appendChild(title);
+    col.appendChild(rowsWrap);
+    col.appendChild(addBtn);
+    grid.appendChild(col);
+  });
+}
+
+buildWorkoutGrid();
+
+function gramsFor(food, targetGramMacro, macroKey){
+  const per100 = food[macroKey];
+  if(!per100) return food.maxG ? food.maxG : 100;
+  let g = Math.round((targetGramMacro*100)/per100);
+  if(food.maxG) g = Math.min(g, food.maxG);
+  g = Math.max(g, food.cat==='fat' ? 3 : 20);
+  return g;
+}
+
+function buildMealPlanFromPantry(kcal, macros, matchedByCat, goalType){
+  const dist = [
+    {name:"ארוחת בוקר", pct:0.25},
+    {name:"ארוחת ביניים", pct:0.12},
+    {name:"ארוחת צהריים", pct:0.30},
+    {name:"ארוחת ביניים", pct:0.13},
+    {name:"ארוחת ערב", pct:0.20},
+  ];
+
+  const fallbackPool = CAT_FALLBACK_LIST[goalType] || CAT_FALLBACK_LIST.cut;
+  const usedFallback = new Set();
+  const occurrenceCount = {}; // tracks how many times each exact food name has already appeared
+
+  function pick(cat, i){
+    const list = matchedByCat[cat];
+    if(list && list.length) return list[i % list.length];
+    usedFallback.add(cat);
+    const fallbackList = fallbackPool[cat];
+    return fallbackList[i % fallbackList.length];
+  }
+
+  function pickAndName(cat, i){
+    const food = pick(cat, i);
+    const occ = occurrenceCount[food.name] || 0;
+    occurrenceCount[food.name] = occ + 1;
+    return {food, label: displayName(food, occ)};
+  }
+
+  const plan = dist.map((d,i)=>{
+    const mealKcal = Math.round(kcal*d.pct);
+    const mealProtein = macros.protein*d.pct;
+    const mealCarbs = macros.carbs*d.pct;
+    const mealFat = macros.fat*d.pct;
+
+    const {food: proteinFood, label: proteinLabel} = pickAndName('protein', i);
+    const {food: carbFood, label: carbLabel} = pickAndName('carb', i);
+    const {food: fatFood, label: fatLabel} = pickAndName('fat', i);
+
+    const vegListRaw = matchedByCat.veg.length ? matchedByCat.veg : fallbackPool.veg;
+    if(!matchedByCat.veg.length) usedFallback.add('veg');
+    const vegFood = vegListRaw[i % vegListRaw.length];
+
+    const items = [
+      {name: proteinLabel, qty: gramsFor(proteinFood, mealProtein, 'p'), unit:"גרם"},
+      {name: carbLabel, qty: gramsFor(carbFood, mealCarbs, 'c'), unit:"גרם"},
+      {name: vegFood.name, qty: 150, unit:"גרם"},
+      {name: fatLabel, qty: gramsFor(fatFood, mealFat, 'f'), unit:"גרם"},
+    ];
+
+    return {name: d.name, kcal: mealKcal, items};
+  });
+
+  return {plan, usedFallback};
+}
+
+function macroTargets(kcal, goalType, weight){
+  let proteinPerKg, fatPerKg;
+  if(goalType==='cut'){ proteinPerKg = 2.2; fatPerKg = 0.8; }
+  else { proteinPerKg = 2.0; fatPerKg = 1.0; }
+  let protein = proteinPerKg * weight;
+  let fat = fatPerKg * weight;
+  let proteinKcal = protein*4;
+  let fatKcal = fat*9;
+  let carbsKcal = Math.max(kcal - proteinKcal - fatKcal, 0);
+  let carbs = carbsKcal/4;
+  return {protein: Math.round(protein), fat: Math.round(fat), carbs: Math.round(carbs),
+    proteinKcal, fatKcal, carbsKcal};
+}
+
+function buildMealPlan(kcal, goalType){
+  // distribute across 5 meals
+  const dist = [
+    {name:"ארוחת בוקר", pct:0.25},
+    {name:"ארוחת ביניים", pct:0.12},
+    {name:"ארוחת צהריים", pct:0.30},
+    {name:"ארוחת ביניים", pct:0.13},
+    {name:"ארוחת ערב", pct:0.20},
+  ];
+
+  const scale = kcal/2400; // reference plan built around 2400 kcal
+
+  const templates = goalType === 'cut' ? [
+    // חיטוב — דגש חלבון גבוה, נפח גבוה, שומן מתון
+    [
+      {name:"ביצים שלמות", g: 100*scale, unit:"גרם (כ-2 ביצים)"},
+      {name:"חלבוני ביצה", g: 90*scale, unit:"גרם (כ-3 חלבונים)"},
+      {name:"לחם מלא / קוואקר", g: 40*scale, unit:"גרם"},
+      {name:"עגבנייה ומלפפון", g:150*scale, unit:"גרם"},
+    ],
+    [
+      {name:"יוגורט יווני 5%", g:170*scale, unit:"גרם"},
+      {name:"פירות יער / תות", g:100*scale, unit:"גרם"},
+    ],
+    [
+      {name:"חזה עוף / הודו צלוי", g:150*scale, unit:"גרם"},
+      {name:"אורז / קינואה מבושל", g:120*scale, unit:"גרם"},
+      {name:"ירקות מאודים / סלט", g:200*scale, unit:"גרם"},
+      {name:"שמן זית", g:5*scale, unit:"גרם (כפית)"},
+    ],
+    [
+      {name:"קוטג' 5%", g:200*scale, unit:"גרם"},
+      {name:"מלפפון וגזר", g:100*scale, unit:"גרם"},
+    ],
+    [
+      {name:"דג לבן / סלמון על הגריל", g:150*scale, unit:"גרם"},
+      {name:"בטטה אפויה", g:150*scale, unit:"גרם"},
+      {name:"סלט ירוק גדול", g:200*scale, unit:"גרם"},
+    ],
+  ] : [
+    // מסת שריר — עודף קלורי, פחמימות ושומן גבוהים יותר
+    [
+      {name:"ביצים שלמות", g:150*scale, unit:"גרם (כ-3 ביצים)"},
+      {name:"שיבולת שועל", g:80*scale, unit:"גרם"},
+      {name:"בננה", g:120*scale, unit:"גרם (יחידה)"},
+      {name:"חמאת בוטנים", g:20*scale, unit:"גרם (כף)"},
+    ],
+    [
+      {name:"אבקת חלבון + חלב", g:40*scale, unit:"גרם אבקה + 300 מ״ל חלב"},
+      {name:"שיבולת שועל / גרנולה", g:50*scale, unit:"גרם"},
+    ],
+    [
+      {name:"חזה עוף / בקר רזה", g:200*scale, unit:"גרם"},
+      {name:"אורז לבן / פסטה", g:180*scale, unit:"גרם"},
+      {name:"ירקות מוקפצים בשמן זית", g:150*scale, unit:"גרם"},
+    ],
+    [
+      {name:"טונה / חומוס", g:150*scale, unit:"גרם"},
+      {name:"פיתה / לחמנייה מלאה", g:80*scale, unit:"גרם"},
+      {name:"אגוזים מעורבים", g:25*scale, unit:"גרם"},
+    ],
+    [
+      {name:"סלמון / בקר טחון 10%", g:180*scale, unit:"גרם"},
+      {name:"תפוח אדמה / בטטה", g:200*scale, unit:"גרם"},
+      {name:"סלט ירקות עם טחינה", g:150*scale, unit:"גרם (כף טחינה)"},
+    ],
+  ];
+
+  return dist.map((d,i)=>({
+    name: d.name,
+    kcal: Math.round(kcal*d.pct),
+    items: templates[i].map(it=>({name:it.name, qty: Math.round(it.g), unit: it.unit}))
+  }));
+}
+
+function generatePlan(scrollToResults){
+  const weight = parseFloat(document.getElementById('weight').value);
+  const height = parseFloat(document.getElementById('height').value);
+  const age = parseFloat(document.getElementById('age').value);
+  const activityEl = document.querySelector('input[name=activity]:checked');
+
+  if(!weight || !height || !age){
+    alert('אנא מלאו משקל, גובה וגיל תקינים.');
+    return;
+  }
+  if(!goal){
+    alert('בחרו מטרה: חיטוב או מסת שריר.');
+    return;
+  }
+  const activityFactor = parseFloat(activityEl.value);
+
+  // Mifflin-St Jeor BMR
+  let bmr;
+  if(sex === 'm') bmr = 10*weight + 6.25*height - 5*age + 5;
+  else bmr = 10*weight + 6.25*height - 5*age - 161;
+
+  const tdee = bmr * activityFactor;
+  let targetKcal;
+  if(goal === 'cut') targetKcal = tdee * 0.80;
+  else targetKcal = tdee * 1.12;
+  targetKcal = Math.round(targetKcal/10)*10;
+
+  const macros = macroTargets(targetKcal, goal, weight);
+
+  // update stats
+  document.getElementById('statKcal').textContent = targetKcal.toLocaleString();
+  document.getElementById('statKcalSource').textContent = 'מחושב אוטומטית לפי הנתונים שלך';
+  document.getElementById('statProtein').innerHTML = macros.protein + '<small> גרם</small>';
+  document.getElementById('statCarbs').innerHTML = macros.carbs + '<small> גרם</small>';
+  document.getElementById('statFat').innerHTML = macros.fat + '<small> גרם</small>';
+
+  // rings
+  const total = macros.proteinKcal + macros.carbsKcal + macros.fatKcal;
+  const pPct = macros.proteinKcal/total, cPct = macros.carbsKcal/total, fPct = macros.fatKcal/total;
+  const r = 64, circ = 2*Math.PI*r;
+
+  const ringP = document.getElementById('ringProtein');
+  const ringC = document.getElementById('ringCarbs');
+  const ringF = document.getElementById('ringFat');
+
+  ringP.style.strokeDasharray = circ;
+  ringP.style.strokeDashoffset = circ - pPct*circ;
+
+  ringC.style.strokeDasharray = circ;
+  ringC.style.strokeDashoffset = circ - cPct*circ;
+  ringC.setAttribute('transform', `rotate(${-90 + pPct*360} 75 75)`);
+
+  ringF.style.strokeDasharray = circ;
+  ringF.style.strokeDashoffset = circ - fPct*circ;
+  ringF.setAttribute('transform', `rotate(${-90 + (pPct+cPct)*360} 75 75)`);
+
+  document.getElementById('legProtein').textContent = Math.round(pPct*100)+'%';
+  document.getElementById('legCarbs').textContent = Math.round(cPct*100)+'%';
+  document.getElementById('legFat').textContent = Math.round(fPct*100)+'%';
+
+  // hero ring
+  const heroCirc = 327;
+  const heroFill = document.getElementById('heroRingFill');
+  heroFill.style.strokeDashoffset = 0;
+  document.getElementById('heroRingText').textContent = targetKcal;
+
+  // meal plan — use selected protein sources if any, otherwise the default template
+  const pantryNoteEl = document.getElementById('pantryNote');
+  const hasTableProteins = selectedProteins.size > 0;
+  let plan;
+
+  if(hasTableProteins){
+    const matchedByCat = {protein:[], carb:[], fat:[], veg:[]};
+
+    selectedProteins.forEach(name=>{
+      const food = pantryDB.find(f=>f.name===name);
+      if(food && !matchedByCat.protein.some(f=>f.name===food.name)){
+        matchedByCat.protein.push(food);
+      }
+    });
+
+    const result = buildMealPlanFromPantry(targetKcal, macros, matchedByCat, goal);
+    plan = result.plan;
+
+    if(result.usedFallback.size){
+      const missing = [...result.usedFallback].map(c=>CAT_LABEL[c]).join(', ');
+      pantryNoteEl.innerHTML = `התפריט נבנה סביב מקורות החלבון שסימנת. עבור <b>${missing}</b> השתמשנו בברירת מחדל מומלצת לפי המטרה שלך.`;
+      pantryNoteEl.style.display = 'block';
+    } else {
+      pantryNoteEl.innerHTML = 'התפריט נבנה כולו ממקורות החלבון שסימנת.';
+      pantryNoteEl.style.display = 'block';
+    }
+  } else {
+    plan = buildMealPlan(targetKcal, goal);
+    pantryNoteEl.style.display = 'none';
+  }
+
+  const mealCardsEl = document.getElementById('mealCards');
+  mealCardsEl.innerHTML = '';
+  plan.forEach(meal=>{
+    const card = document.createElement('div');
+    card.className = 'meal-card';
+    card.innerHTML = `
+      <div class="meal-head">
+        <div class="m-name">${meal.name}</div>
+        <div class="m-kcal">${meal.kcal} קק"ל</div>
+      </div>
+      <div class="meal-items">
+        ${meal.items.map(it=>`<div class="meal-item"><span>${it.name}</span><span class="qty">${it.qty} ${it.unit}</span></div>`).join('')}
+      </div>
+    `;
+    mealCardsEl.appendChild(card);
+  });
+
+  document.getElementById('placeholder').style.display = 'none';
+  document.getElementById('results').classList.add('show');
+  if(scrollToResults){
+    document.getElementById('results').scrollIntoView({behavior:'smooth', block:'nearest'});
+  }
+}
+
+document.getElementById('generateBtn').addEventListener('click', ()=>generatePlan(true));
+
+document.getElementById('backBtn').addEventListener('click', ()=>{
+  document.getElementById('results').classList.remove('show');
+  document.getElementById('placeholder').style.display = 'flex';
+  document.querySelector('.hero').scrollIntoView({behavior:'smooth', block:'start'});
+});
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('service-worker.js').catch(()=>{});
+  });
+}
+</script>
+</body>
+</html>

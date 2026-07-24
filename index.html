@@ -496,6 +496,12 @@
     padding: 12px 10px;
     position: relative;
   }
+  .workout-time-wrap{
+    display:flex; align-items:center; gap:6px;
+  }
+  .workout-time-colon{
+    color: var(--text-faint); font-weight:700; flex-shrink:0;
+  }
   .workout-row select{
     width:100%;
     background: var(--bg);
@@ -505,6 +511,10 @@
     padding: 10px 8px;
     border-radius: 8px;
     outline: none;
+  }
+  .workout-row select.workout-hour,
+  .workout-row select.workout-minute{
+    flex: 1; min-width: 0;
   }
   .workout-row select:focus{ border-color: var(--goal-a); }
   .muscle-chips{
@@ -1844,9 +1854,13 @@ renderSchedule();
 // ---- Weekly workout schedule builder ----
 const WORKOUT_DAYS = ["ראשון","שני","שלישי","רביעי","חמישי","שישי","שבת"];
 const WORKOUT_MUSCLES = ["חזה","גב","רגליים","כתפיים","ידיים","בטן / ליבה"];
-const WORKOUT_HOURS = [];
+const WORKOUT_HOUR_VALUES = [];
 for(let h=6; h<=22; h++){
-  WORKOUT_HOURS.push(String(h).padStart(2,'0') + ':00');
+  WORKOUT_HOUR_VALUES.push(String(h).padStart(2,'0'));
+}
+const WORKOUT_MINUTE_VALUES = [];
+for(let m=0; m<60; m+=5){
+  WORKOUT_MINUTE_VALUES.push(String(m).padStart(2,'0'));
 }
 
 function saveWorkoutSchedule(){
@@ -1855,7 +1869,7 @@ function saveWorkoutSchedule(){
   document.querySelectorAll('.workout-day').forEach(col=>{
     const day = col.querySelector('.workout-day-title').textContent;
     col.querySelectorAll('.workout-row').forEach(row=>{
-      const hour = row.querySelector('.workout-hour').value;
+      const hour = row.querySelector('.workout-hour').value + ':' + row.querySelector('.workout-minute').value;
       const muscles = [...row.querySelectorAll('.muscle-chip.active')].map(c=>c.dataset.muscle);
       data[day].push({hour, muscles});
     });
@@ -1879,16 +1893,38 @@ function createWorkoutRow(initial){
   removeBtn.textContent = '×';
   removeBtn.addEventListener('click', ()=>{ row.remove(); saveWorkoutSchedule(); });
 
+  const timeWrap = document.createElement('div');
+  timeWrap.className = 'workout-time-wrap';
+
   const hourSelect = document.createElement('select');
   hourSelect.className = 'workout-hour';
-  WORKOUT_HOURS.forEach(h=>{
+  WORKOUT_HOUR_VALUES.forEach(h=>{
     const opt = document.createElement('option');
     opt.value = h;
     opt.textContent = h;
-    if(initial && initial.hour === h) opt.selected = true;
+    if(initial && initial.hour && initial.hour.split(':')[0] === h) opt.selected = true;
     hourSelect.appendChild(opt);
   });
   hourSelect.addEventListener('change', saveWorkoutSchedule);
+
+  const colon = document.createElement('span');
+  colon.className = 'workout-time-colon';
+  colon.textContent = ':';
+
+  const minuteSelect = document.createElement('select');
+  minuteSelect.className = 'workout-minute';
+  WORKOUT_MINUTE_VALUES.forEach(m=>{
+    const opt = document.createElement('option');
+    opt.value = m;
+    opt.textContent = m;
+    if(initial && initial.hour && initial.hour.split(':')[1] === m) opt.selected = true;
+    minuteSelect.appendChild(opt);
+  });
+  minuteSelect.addEventListener('change', saveWorkoutSchedule);
+
+  timeWrap.appendChild(hourSelect);
+  timeWrap.appendChild(colon);
+  timeWrap.appendChild(minuteSelect);
 
   const muscleChips = document.createElement('div');
   muscleChips.className = 'muscle-chips';
@@ -1907,7 +1943,7 @@ function createWorkoutRow(initial){
   });
 
   row.appendChild(removeBtn);
-  row.appendChild(hourSelect);
+  row.appendChild(timeWrap);
   row.appendChild(muscleChips);
   return row;
 }

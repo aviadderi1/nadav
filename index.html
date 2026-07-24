@@ -416,6 +416,33 @@
     margin-top: 26px;
   }
   .protein-picker-card{ margin-top: 0; }
+  .meal-assign-card{ margin-top: 26px; }
+
+  .meal-assign-row{
+    display:flex; align-items:center; justify-content: space-between;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .meal-assign-row:last-child{ border-bottom: none; }
+  .meal-assign-label{
+    font-family:'Rubik'; font-weight:700; font-size: 14.5px;
+    flex-shrink: 0;
+  }
+  .meal-assign-select{
+    flex: 1;
+    max-width: 220px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Assistant';
+    font-size: 14px;
+    font-weight: 600;
+    padding: 9px 12px;
+    border-radius: var(--radius);
+    outline: none;
+  }
+  .meal-assign-select:focus{ border-color: var(--goal-a); }
 
   .workout-grid{
     display:grid;
@@ -1132,6 +1159,24 @@
       <div class="pantry-hint" id="proteinTableEmpty" style="display:none;">לא נמצאו מרכיבים תואמים לחיפוש.</div>
     </div>
 
+    <div class="card meal-assign-card">
+      <h3 class="card-title">התאמת מאכל קבוע לכל ארוחה</h3>
+      <p class="card-desc">רוצים תמיד גבינה בבוקר, חזה עוף בצהריים וטונה בערב? בחרו כאן — כל ארוחה שתשאירו על "אוטומטי" תמשיך לקבל מגוון מתחלף כרגיל.</p>
+
+      <div class="meal-assign-row">
+        <span class="meal-assign-label">ארוחת בוקר</span>
+        <select id="mealOverride0" class="meal-assign-select"></select>
+      </div>
+      <div class="meal-assign-row">
+        <span class="meal-assign-label">ארוחת צהריים</span>
+        <select id="mealOverride2" class="meal-assign-select"></select>
+      </div>
+      <div class="meal-assign-row">
+        <span class="meal-assign-label">ארוחת ערב</span>
+        <select id="mealOverride4" class="meal-assign-select"></select>
+      </div>
+    </div>
+
     <div class="card schedule-card">
       <h3 class="card-title">לוח אימונים שבועי</h3>
       <p class="card-desc">הוסיפו את הימים והשעות הקבועים שבהם אתם מתאמנים (כולל חצאי שעות). הרשימה נשמרת בדפדפן אצלכם.</p>
@@ -1636,6 +1681,32 @@ document.getElementById('proteinSearch').addEventListener('input', (e)=>{
 
 renderProteinTable('');
 
+// ---- Fixed meal-to-food assignment (e.g. always cheese for breakfast) ----
+const MEAL_OVERRIDE_SLOTS = [0, 2, 4];
+MEAL_OVERRIDE_SLOTS.forEach(slotIdx=>{
+  const select = document.getElementById(`mealOverride${slotIdx}`);
+  const autoOpt = document.createElement('option');
+  autoOpt.value = '';
+  autoOpt.textContent = 'אוטומטי (מגוון)';
+  select.appendChild(autoOpt);
+
+  pantryDB.filter(f=>f.cat==='protein').forEach(food=>{
+    const opt = document.createElement('option');
+    opt.value = food.name;
+    opt.textContent = food.name;
+    select.appendChild(opt);
+  });
+});
+
+function getMealOverrides(){
+  const overrides = {};
+  MEAL_OVERRIDE_SLOTS.forEach(slotIdx=>{
+    const val = document.getElementById(`mealOverride${slotIdx}`).value;
+    if(val) overrides[slotIdx] = val;
+  });
+  return overrides;
+}
+
 // ---- Weekly training schedule ----
 const DAY_NAMES = ["ראשון","שני","שלישי","רביעי","חמישי","שישי","שבת"];
 
@@ -1811,8 +1882,9 @@ function gramsFor(food, targetGramMacro, macroKey){
   return g;
 }
 
-function buildMealPlanFromPantry(kcal, macros, matchedByCat, goalType, numDays){
+function buildMealPlanFromPantry(kcal, macros, matchedByCat, goalType, numDays, overrides){
   numDays = numDays || 1;
+  overrides = overrides || {};
   const dist = [
     {name:"ארוחת בוקר", pct:0.25},
     {name:"ארוחת ביניים", pct:0.12},
@@ -1843,13 +1915,21 @@ function buildMealPlanFromPantry(kcal, macros, matchedByCat, goalType, numDays){
 
   const days = [];
   for(let d=0; d<numDays; d++){
-    const dayPlan = dist.map((entry)=>{
+    const dayPlan = dist.map((entry, mealIdx)=>{
       const mealKcal = Math.round(kcal*entry.pct);
       const mealProtein = macros.protein*entry.pct;
       const mealCarbs = macros.carbs*entry.pct;
       const mealFat = macros.fat*entry.pct;
 
-      const {food: proteinFood, label: proteinLabel} = pickAndName('protein');
+      let proteinFood, proteinLabel;
+      const overrideName = overrides[mealIdx];
+      if(overrideName){
+        proteinFood = pantryDB.find(f=>f.name===overrideName);
+        proteinLabel = proteinFood.name;
+      } else {
+        ({food: proteinFood, label: proteinLabel} = pickAndName('protein'));
+      }
+
       const {food: carbFood, label: carbLabel} = pickAndName('carb');
       const {food: fatFood, label: fatLabel} = pickAndName('fat');
 
@@ -2053,6 +2133,8 @@ function generatePlan(isWeekly, scrollToResults){
   // meal plan — use selected protein sources if any, otherwise a rotating default pool
   const pantryNoteEl = document.getElementById('pantryNote');
   const hasTableProteins = selectedProteins.size > 0;
+  const mealOverrides = getMealOverrides();
+  const hasOverrides = Object.keys(mealOverrides).length > 0;
   const mealCardsEl = document.getElementById('mealCards');
   mealCardsEl.innerHTML = '';
 
@@ -2065,7 +2147,7 @@ function generatePlan(isWeekly, scrollToResults){
   });
 
   if(isWeekly){
-    const result = buildMealPlanFromPantry(targetKcal, macros, matchedByCat, goal, 7);
+    const result = buildMealPlanFromPantry(targetKcal, macros, matchedByCat, goal, 7, mealOverrides);
 
     if(hasTableProteins){
       pantryNoteEl.innerHTML = result.usedFallback.size
@@ -2073,6 +2155,9 @@ function generatePlan(isWeekly, scrollToResults){
         : 'התפריט השבועי נבנה ממקורות החלבון שסימנת, עם מגוון בין הימים והארוחות.';
     } else {
       pantryNoteEl.innerHTML = 'התפריט השבועי נבנה ממאגר מגוון לפי המטרה שלך, עם רוטציה בין הימים והארוחות.';
+    }
+    if(hasOverrides){
+      pantryNoteEl.innerHTML += ' הארוחות שהתאמת ידנית יישמרו קבועות בכל ימי השבוע.';
     }
     pantryNoteEl.style.display = 'block';
 
@@ -2090,8 +2175,8 @@ function generatePlan(isWeekly, scrollToResults){
     });
   } else {
     let plan;
-    if(hasTableProteins){
-      const result = buildMealPlanFromPantry(targetKcal, macros, matchedByCat, goal);
+    if(hasTableProteins || hasOverrides){
+      const result = buildMealPlanFromPantry(targetKcal, macros, matchedByCat, goal, 1, mealOverrides);
       plan = result.plan;
 
       if(result.usedFallback.size){

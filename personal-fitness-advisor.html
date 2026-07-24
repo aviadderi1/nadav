@@ -2199,6 +2199,15 @@ function findNutritionMatch(norm){
 function respondToMessage(rawText){
   const norm = normalizeHeb(rawText);
 
+  const SMALL_TALK_PHRASES = [
+    'מה קורה', 'מה המצב', 'מה נשמע', 'מה שלומך', 'איך הולך',
+    'מה חדש', 'מה איתך', 'מה קורה איתך', 'הכל טוב', 'מה עניינים'
+  ];
+  if(SMALL_TALK_PHRASES.some(p=> norm.includes(normalizeHeb(p)))){
+    addChatMessage('הכל טוב תודה ששאלת! איך אוכל לעזור לך היום?', 'bot');
+    return;
+  }
+
   if(norm.includes(normalizeHeb('טבעוני')) || norm.includes(normalizeHeb('טבעונית')) || norm.includes(normalizeHeb('vegan'))){
     chatProfile.vegan = true;
     saveChatProfile(chatProfile);

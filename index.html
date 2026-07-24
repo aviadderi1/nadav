@@ -416,33 +416,20 @@
     margin-top: 26px;
   }
   .protein-picker-card{ margin-top: 0; }
-  .meal-assign-card{ margin-top: 26px; }
 
-  .meal-assign-row{
-    display:flex; align-items:center; justify-content: space-between;
-    gap: 12px;
-    padding: 10px 0;
-    border-bottom: 1px solid var(--border);
+  .meal-table-block{ margin-bottom: 28px; }
+  .meal-table-block:last-child{ margin-bottom: 0; }
+  .meal-table-heading{
+    display:flex; align-items:center; gap:9px;
+    font-family:'Rubik'; font-weight:800; font-size: 16px;
+    color: var(--goal-a);
+    margin: 0 0 12px;
   }
-  .meal-assign-row:last-child{ border-bottom: none; }
-  .meal-assign-label{
-    font-family:'Rubik'; font-weight:700; font-size: 14.5px;
-    flex-shrink: 0;
+  .meal-table-dot{
+    width:9px; height:9px; border-radius:50%;
+    background: var(--goal-a);
+    flex-shrink:0;
   }
-  .meal-assign-select{
-    flex: 1;
-    max-width: 220px;
-    background: var(--surface-2);
-    border: 1px solid var(--border);
-    color: var(--text);
-    font-family: 'Assistant';
-    font-size: 14px;
-    font-weight: 600;
-    padding: 9px 12px;
-    border-radius: var(--radius);
-    outline: none;
-  }
-  .meal-assign-select:focus{ border-color: var(--goal-a); }
 
   .workout-grid{
     display:grid;
@@ -1138,42 +1125,64 @@
     </div>
 
     <div class="card protein-picker-card">
-      <h3 class="card-title">מקורות חלבון שאני אוהב</h3>
-      <p class="card-desc">חפשו וסמנו את המרכיבים שאתם אוהבים — הם ישמשו לבניית התפריט. פחמימות, שומן וירקות ייבחרו אוטומטית לפי המטרה שלכם.</p>
+      <h3 class="card-title">מקורות חלבון לכל ארוחה</h3>
+      <p class="card-desc">חפשו וסמנו בכל טבלה את המרכיבים שאתם רוצים לארוחה הזו. אם תסמנו כמה — הם יתחלפו בין הימים. ארוחות ביניים ופחמימות/שומן/ירקות ייבחרו אוטומטית לפי המטרה שלכם.</p>
 
-      <input type="text" id="proteinSearch" class="protein-search" placeholder="חפשו מרכיב, לדוגמה: עוף, טונה, קוטג'...">
-
-      <div class="protein-table-wrap">
-        <table class="protein-table" id="proteinTable">
-          <thead>
-            <tr>
-              <th class="col-check"></th>
-              <th>מרכיב</th>
-              <th>קלוריות ל-100 גרם</th>
-              <th>חלבון ל-100 גרם</th>
-            </tr>
-          </thead>
-          <tbody id="proteinTableBody"></tbody>
-        </table>
+      <div class="meal-table-block">
+        <h4 class="meal-table-heading"><span class="meal-table-dot"></span>בוקר</h4>
+        <input type="text" id="proteinSearch-breakfast" class="protein-search" placeholder="חפשו מרכיב, לדוגמה: עוף, טונה, קוטג'...">
+        <div class="protein-table-wrap">
+          <table class="protein-table" id="proteinTable-breakfast">
+            <thead>
+              <tr>
+                <th class="col-check"></th>
+                <th>מרכיב</th>
+                <th>קלוריות ל-100 גרם</th>
+                <th>חלבון ל-100 גרם</th>
+              </tr>
+            </thead>
+            <tbody id="proteinTableBody-breakfast"></tbody>
+          </table>
+        </div>
+        <div class="pantry-hint" id="proteinTableEmpty-breakfast" style="display:none;">לא נמצאו מרכיבים תואמים לחיפוש.</div>
       </div>
-      <div class="pantry-hint" id="proteinTableEmpty" style="display:none;">לא נמצאו מרכיבים תואמים לחיפוש.</div>
-    </div>
 
-    <div class="card meal-assign-card">
-      <h3 class="card-title">התאמת מאכל קבוע לכל ארוחה</h3>
-      <p class="card-desc">רוצים תמיד גבינה בבוקר, חזה עוף בצהריים וטונה בערב? בחרו כאן — כל ארוחה שתשאירו על "אוטומטי" תמשיך לקבל מגוון מתחלף כרגיל.</p>
+      <div class="meal-table-block">
+        <h4 class="meal-table-heading"><span class="meal-table-dot"></span>צהריים</h4>
+        <input type="text" id="proteinSearch-lunch" class="protein-search" placeholder="חפשו מרכיב, לדוגמה: עוף, טונה, קוטג'...">
+        <div class="protein-table-wrap">
+          <table class="protein-table" id="proteinTable-lunch">
+            <thead>
+              <tr>
+                <th class="col-check"></th>
+                <th>מרכיב</th>
+                <th>קלוריות ל-100 גרם</th>
+                <th>חלבון ל-100 גרם</th>
+              </tr>
+            </thead>
+            <tbody id="proteinTableBody-lunch"></tbody>
+          </table>
+        </div>
+        <div class="pantry-hint" id="proteinTableEmpty-lunch" style="display:none;">לא נמצאו מרכיבים תואמים לחיפוש.</div>
+      </div>
 
-      <div class="meal-assign-row">
-        <span class="meal-assign-label">ארוחת בוקר</span>
-        <select id="mealOverride0" class="meal-assign-select"></select>
-      </div>
-      <div class="meal-assign-row">
-        <span class="meal-assign-label">ארוחת צהריים</span>
-        <select id="mealOverride2" class="meal-assign-select"></select>
-      </div>
-      <div class="meal-assign-row">
-        <span class="meal-assign-label">ארוחת ערב</span>
-        <select id="mealOverride4" class="meal-assign-select"></select>
+      <div class="meal-table-block">
+        <h4 class="meal-table-heading"><span class="meal-table-dot"></span>ערב</h4>
+        <input type="text" id="proteinSearch-dinner" class="protein-search" placeholder="חפשו מרכיב, לדוגמה: עוף, טונה, קוטג'...">
+        <div class="protein-table-wrap">
+          <table class="protein-table" id="proteinTable-dinner">
+            <thead>
+              <tr>
+                <th class="col-check"></th>
+                <th>מרכיב</th>
+                <th>קלוריות ל-100 גרם</th>
+                <th>חלבון ל-100 גרם</th>
+              </tr>
+            </thead>
+            <tbody id="proteinTableBody-dinner"></tbody>
+          </table>
+        </div>
+        <div class="pantry-hint" id="proteinTableEmpty-dinner" style="display:none;">לא נמצאו מרכיבים תואמים לחיפוש.</div>
       </div>
     </div>
 
@@ -1627,12 +1636,16 @@ function normalizeHeb(s){
   return s.replace(/["'׳״]/g,'').replace(/\s+/g,' ').trim().toLowerCase();
 }
 
-// ---- Protein source picker table ----
-const selectedProteins = new Set();
+// ---- Protein source pickers: one table per meal (breakfast/lunch/dinner) ----
+const MEAL_TABLES = [
+  {key: 'breakfast', slot: 0, selected: new Set()},
+  {key: 'lunch',     slot: 2, selected: new Set()},
+  {key: 'dinner',    slot: 4, selected: new Set()},
+];
 
-function renderProteinTable(filterText){
-  const tbody = document.getElementById('proteinTableBody');
-  const emptyMsg = document.getElementById('proteinTableEmpty');
+function renderProteinTable(tableCfg, filterText){
+  const tbody = document.getElementById(`proteinTableBody-${tableCfg.key}`);
+  const emptyMsg = document.getElementById(`proteinTableEmpty-${tableCfg.key}`);
   const norm = normalizeHeb(filterText || '');
   tbody.innerHTML = '';
 
@@ -1647,7 +1660,7 @@ function renderProteinTable(filterText){
 
   filtered.forEach(food=>{
     const tr = document.createElement('tr');
-    const isPicked = selectedProteins.has(food.name);
+    const isPicked = tableCfg.selected.has(food.name);
     if(isPicked) tr.classList.add('picked');
     tr.innerHTML = `
       <td class="col-check"><input type="checkbox" data-food="${food.name}" ${isPicked ? 'checked' : ''}></td>
@@ -1659,52 +1672,47 @@ function renderProteinTable(filterText){
   });
 }
 
-document.getElementById('proteinTableBody').addEventListener('click', (e)=>{
-  const tr = e.target.closest('tr');
-  if(!tr) return;
-  const checkbox = tr.querySelector('input[type=checkbox]');
-  if(e.target !== checkbox) checkbox.checked = !checkbox.checked;
+MEAL_TABLES.forEach(tableCfg=>{
+  document.getElementById(`proteinTableBody-${tableCfg.key}`).addEventListener('click', (e)=>{
+    const tr = e.target.closest('tr');
+    if(!tr) return;
+    const checkbox = tr.querySelector('input[type=checkbox]');
+    if(e.target !== checkbox) checkbox.checked = !checkbox.checked;
 
-  const foodName = checkbox.dataset.food;
-  if(checkbox.checked){
-    selectedProteins.add(foodName);
-    tr.classList.add('picked');
-  } else {
-    selectedProteins.delete(foodName);
-    tr.classList.remove('picked');
-  }
-});
-
-document.getElementById('proteinSearch').addEventListener('input', (e)=>{
-  renderProteinTable(e.target.value);
-});
-
-renderProteinTable('');
-
-// ---- Fixed meal-to-food assignment (e.g. always cheese for breakfast) ----
-const MEAL_OVERRIDE_SLOTS = [0, 2, 4];
-MEAL_OVERRIDE_SLOTS.forEach(slotIdx=>{
-  const select = document.getElementById(`mealOverride${slotIdx}`);
-  const autoOpt = document.createElement('option');
-  autoOpt.value = '';
-  autoOpt.textContent = 'אוטומטי (מגוון)';
-  select.appendChild(autoOpt);
-
-  pantryDB.filter(f=>f.cat==='protein').forEach(food=>{
-    const opt = document.createElement('option');
-    opt.value = food.name;
-    opt.textContent = food.name;
-    select.appendChild(opt);
+    const foodName = checkbox.dataset.food;
+    if(checkbox.checked){
+      tableCfg.selected.add(foodName);
+      tr.classList.add('picked');
+    } else {
+      tableCfg.selected.delete(foodName);
+      tr.classList.remove('picked');
+    }
   });
+
+  document.getElementById(`proteinSearch-${tableCfg.key}`).addEventListener('input', (e)=>{
+    renderProteinTable(tableCfg, e.target.value);
+  });
+
+  renderProteinTable(tableCfg, '');
 });
 
-function getMealOverrides(){
-  const overrides = {};
-  MEAL_OVERRIDE_SLOTS.forEach(slotIdx=>{
-    const val = document.getElementById(`mealOverride${slotIdx}`).value;
-    if(val) overrides[slotIdx] = val;
+// per-meal-slot list of food objects the user picked for that specific meal (0=בוקר, 2=צהריים, 4=ערב)
+function getMealProteinPools(){
+  const pools = {};
+  MEAL_TABLES.forEach(tableCfg=>{
+    if(tableCfg.selected.size){
+      pools[tableCfg.slot] = [...tableCfg.selected].map(name=>pantryDB.find(f=>f.name===name)).filter(Boolean);
+    }
   });
-  return overrides;
+  return pools;
+}
+
+// union of everything picked across all three tables — used as the general protein
+// pool for the two snack slots and as a fallback source
+function getAllSelectedProteins(){
+  const names = new Set();
+  MEAL_TABLES.forEach(tableCfg=> tableCfg.selected.forEach(n=>names.add(n)));
+  return [...names].map(name=>pantryDB.find(f=>f.name===name)).filter(Boolean);
 }
 
 // ---- Weekly training schedule ----
@@ -1882,9 +1890,9 @@ function gramsFor(food, targetGramMacro, macroKey){
   return g;
 }
 
-function buildMealPlanFromPantry(kcal, macros, matchedByCat, goalType, numDays, overrides){
+function buildMealPlanFromPantry(kcal, macros, matchedByCat, goalType, numDays, mealProteinPools){
   numDays = numDays || 1;
-  overrides = overrides || {};
+  mealProteinPools = mealProteinPools || {}; // {0:[foods for breakfast], 2:[foods for lunch], 4:[foods for dinner]}
   const dist = [
     {name:"ארוחת בוקר", pct:0.25},
     {name:"ארוחת ביניים", pct:0.12},
@@ -1897,6 +1905,7 @@ function buildMealPlanFromPantry(kcal, macros, matchedByCat, goalType, numDays, 
   const usedFallback = new Set();
   const occurrenceCount = {}; // tracks how many times each exact food name has already appeared
   let slot = 0; // continuous counter across every meal in every day, so variety spans the whole week
+  const mealSlotCounters = {}; // separate rotation position for each fixed meal (breakfast/lunch/dinner)
 
   function pick(cat){
     const list = matchedByCat[cat];
@@ -1913,6 +1922,15 @@ function buildMealPlanFromPantry(kcal, macros, matchedByCat, goalType, numDays, 
     return {food, label: displayName(food, occ)};
   }
 
+  function pickFromPool(pool, mealIdx){
+    const counter = mealSlotCounters[mealIdx] || 0;
+    const food = pool[counter % pool.length];
+    mealSlotCounters[mealIdx] = counter + 1;
+    const occ = occurrenceCount[food.name] || 0;
+    occurrenceCount[food.name] = occ + 1;
+    return {food, label: displayName(food, occ)};
+  }
+
   const days = [];
   for(let d=0; d<numDays; d++){
     const dayPlan = dist.map((entry, mealIdx)=>{
@@ -1921,14 +1939,10 @@ function buildMealPlanFromPantry(kcal, macros, matchedByCat, goalType, numDays, 
       const mealCarbs = macros.carbs*entry.pct;
       const mealFat = macros.fat*entry.pct;
 
-      let proteinFood, proteinLabel;
-      const overrideName = overrides[mealIdx];
-      if(overrideName){
-        proteinFood = pantryDB.find(f=>f.name===overrideName);
-        proteinLabel = proteinFood.name;
-      } else {
-        ({food: proteinFood, label: proteinLabel} = pickAndName('protein'));
-      }
+      const pool = mealProteinPools[mealIdx];
+      const {food: proteinFood, label: proteinLabel} = (pool && pool.length)
+        ? pickFromPool(pool, mealIdx)
+        : pickAndName('protein');
 
       const {food: carbFood, label: carbLabel} = pickAndName('carb');
       const {food: fatFood, label: fatLabel} = pickAndName('fat');
@@ -2132,22 +2146,17 @@ function generatePlan(isWeekly, scrollToResults){
 
   // meal plan — use selected protein sources if any, otherwise a rotating default pool
   const pantryNoteEl = document.getElementById('pantryNote');
-  const hasTableProteins = selectedProteins.size > 0;
-  const mealOverrides = getMealOverrides();
-  const hasOverrides = Object.keys(mealOverrides).length > 0;
+  const mealProteinPools = getMealProteinPools();
+  const hasMealPools = Object.keys(mealProteinPools).length > 0;
+  const allSelected = getAllSelectedProteins();
+  const hasTableProteins = allSelected.length > 0;
   const mealCardsEl = document.getElementById('mealCards');
   mealCardsEl.innerHTML = '';
 
-  const matchedByCat = {protein:[], carb:[], fat:[], veg:[]};
-  selectedProteins.forEach(name=>{
-    const food = pantryDB.find(f=>f.name===name);
-    if(food && !matchedByCat.protein.some(f=>f.name===food.name)){
-      matchedByCat.protein.push(food);
-    }
-  });
+  const matchedByCat = {protein: allSelected, carb:[], fat:[], veg:[]};
 
   if(isWeekly){
-    const result = buildMealPlanFromPantry(targetKcal, macros, matchedByCat, goal, 7, mealOverrides);
+    const result = buildMealPlanFromPantry(targetKcal, macros, matchedByCat, goal, 7, mealProteinPools);
 
     if(hasTableProteins){
       pantryNoteEl.innerHTML = result.usedFallback.size
@@ -2156,8 +2165,8 @@ function generatePlan(isWeekly, scrollToResults){
     } else {
       pantryNoteEl.innerHTML = 'התפריט השבועי נבנה ממאגר מגוון לפי המטרה שלך, עם רוטציה בין הימים והארוחות.';
     }
-    if(hasOverrides){
-      pantryNoteEl.innerHTML += ' הארוחות שהתאמת ידנית יישמרו קבועות בכל ימי השבוע.';
+    if(hasMealPools){
+      pantryNoteEl.innerHTML += ' הבוקר/צהריים/ערב יתחלפו בין המרכיבים שסימנת לאותה ארוחה בלבד.';
     }
     pantryNoteEl.style.display = 'block';
 
@@ -2175,8 +2184,8 @@ function generatePlan(isWeekly, scrollToResults){
     });
   } else {
     let plan;
-    if(hasTableProteins || hasOverrides){
-      const result = buildMealPlanFromPantry(targetKcal, macros, matchedByCat, goal, 1, mealOverrides);
+    if(hasTableProteins || hasMealPools){
+      const result = buildMealPlanFromPantry(targetKcal, macros, matchedByCat, goal, 1, mealProteinPools);
       plan = result.plan;
 
       if(result.usedFallback.size){

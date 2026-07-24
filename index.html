@@ -2208,9 +2208,19 @@ function respondToMessage(rawText){
     'חרא', 'זונה', 'בן זונה', 'בת זונה', 'כלב', 'כלבה', 'מניאק',
     'שמוק', 'מזדיין', 'תזדיין', 'לך למות', 'תמות', 'סתום את הפה',
     'טמבל', 'אפס אתה', 'מפגרת', 'מזורגג', 'זבל אתה', 'חתיכת חרא',
+    'זין', 'קוקסינל', 'כוסעמק', 'כוס',
     'stupid', 'idiot', 'fuck', 'asshole', 'bitch'
   ];
-  if(DISRESPECTFUL_WORDS.some(w=> norm.includes(normalizeHeb(w)))){
+  const chatTokens = norm.split(' ').filter(Boolean);
+  const isDisrespectful = DISRESPECTFUL_WORDS.some(w=>{
+    const normW = normalizeHeb(w);
+    // multi-word phrases (e.g. "בן זונה") are checked as a substring;
+    // single words are matched only as a whole word so they don't false-positive
+    // inside unrelated words (e.g. "כוס" inside "כוסמת" or "כוסברה")
+    if(normW.includes(' ')) return norm.includes(normW);
+    return chatTokens.includes(normW);
+  });
+  if(isDisrespectful){
     addChatMessage('שפה זו לא מקובלת כאן, בוא/י נתחיל מהתחלה 🙂', 'bot');
     return;
   }

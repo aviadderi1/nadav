@@ -2203,6 +2203,18 @@ function findNutritionMatch(norm){
 function respondToMessage(rawText){
   const norm = normalizeHeb(rawText);
 
+  const DISRESPECTFUL_WORDS = [
+    'מטומטם', 'טיפש', 'אידיוט', 'דביל', 'מפגר', 'מנוול',
+    'חרא', 'זונה', 'בן זונה', 'בת זונה', 'כלב', 'כלבה', 'מניאק',
+    'שמוק', 'מזדיין', 'תזדיין', 'לך למות', 'תמות', 'סתום את הפה',
+    'טמבל', 'אפס אתה', 'מפגרת', 'מזורגג', 'זבל אתה', 'חתיכת חרא',
+    'stupid', 'idiot', 'fuck', 'asshole', 'bitch'
+  ];
+  if(DISRESPECTFUL_WORDS.some(w=> norm.includes(normalizeHeb(w)))){
+    addChatMessage('שפה זו לא מקובלת כאן, בוא/י נתחיל מהתחלה 🙂', 'bot');
+    return;
+  }
+
   const SMALL_TALK_PHRASES = [
     'מה קורה', 'מה המצב', 'מה נשמע', 'מה שלומך', 'איך הולך',
     'מה חדש', 'מה איתך', 'מה קורה איתך', 'הכל טוב', 'מה עניינים'

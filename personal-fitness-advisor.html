@@ -51,6 +51,89 @@
     transition: background 0.6s ease;
   }
 
+  .name-gate{
+    position: fixed; inset:0;
+    z-index: 2000;
+    background: var(--bg);
+    display:flex; align-items:center; justify-content:center;
+    padding: 24px;
+  }
+  .name-gate-card{
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 40px 30px;
+    max-width: 360px;
+    width: 100%;
+    text-align: center;
+  }
+  .name-gate-icon{
+    color: var(--goal-a);
+    display:flex; align-items:center; justify-content:center;
+    margin-bottom: 14px;
+  }
+  .name-gate-card h2{
+    font-family:'Rubik'; font-weight:800; font-size: 22px;
+    margin: 0 0 6px;
+  }
+  .name-gate-card p{
+    color: var(--text-dim); font-size: 14.5px;
+    margin: 0 0 18px;
+  }
+  .name-gate-card input{
+    width: 100%;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Assistant';
+    font-size: 16px;
+    font-weight: 600;
+    padding: 12px 16px;
+    border-radius: var(--radius);
+    outline: none;
+    text-align: center;
+    margin-bottom: 14px;
+    transition: border-color .2s;
+  }
+  .name-gate-card input:focus{ border-color: var(--goal-a); }
+  .name-gate-card button{
+    width: 100%;
+    border: none;
+    background: var(--goal-a);
+    color: #0e1013;
+    font-family:'Rubik'; font-weight: 800; font-size: 15px;
+    padding: 13px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: filter .15s, transform .15s;
+  }
+  .name-gate-card button:hover{ filter: brightness(1.08); transform: translateY(-1px); }
+
+  .greeting-toast{
+    position: fixed;
+    top: 20px; left: 50%;
+    transform: translateX(-50%) translateY(-16px);
+    background: var(--surface);
+    border: 1px solid var(--goal-a);
+    color: var(--text);
+    padding: 12px 22px;
+    border-radius: 100px;
+    font-family: 'Rubik'; font-weight: 700; font-size: 14px;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.45);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .4s ease, transform .4s ease;
+    z-index: 1500;
+    white-space: nowrap;
+    max-width: 90vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .greeting-toast.show{
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
   .grid-overlay{
     position: fixed; inset:0; pointer-events:none; z-index:0;
     background-image: linear-gradient(var(--bg-grid) 1px, transparent 1px), linear-gradient(90deg, var(--bg-grid) 1px, transparent 1px);
@@ -723,6 +806,8 @@
   @media (max-width: 640px){
     .wrap{ padding: 24px 16px 60px; }
     .card{ padding: 18px; }
+    .greeting-toast{ white-space: normal; text-align:center; font-size: 13px; padding: 10px 16px; max-width: 85vw; }
+    .name-gate-card{ padding: 30px 22px; }
     .layout{ gap: 16px; }
     .two-col-grid{ gap: 16px; margin-top: 16px; }
 
@@ -805,6 +890,18 @@
 </style>
 </head>
 <body data-goal="none">
+<div class="name-gate" id="nameGate">
+  <div class="name-gate-card">
+    <div class="name-gate-icon">
+      <svg width="40" height="40" viewBox="0 0 48 48" fill="none"><rect x="2" y="17" width="8" height="14" rx="2" fill="currentColor"/><rect x="10" y="13" width="5" height="22" rx="1.5" fill="currentColor"/><rect x="15" y="20" width="18" height="8" rx="2" fill="currentColor"/><rect x="33" y="13" width="5" height="22" rx="1.5" fill="currentColor"/><rect x="38" y="17" width="8" height="14" rx="2" fill="currentColor"/></svg>
+    </div>
+    <h2>לפני שנתחיל</h2>
+    <p>איך קוראים לך?</p>
+    <input type="text" id="nameGateInput" placeholder="השם שלך" maxlength="30" autocomplete="off">
+    <button type="button" id="nameGateBtn">המשך</button>
+  </div>
+</div>
+<div class="greeting-toast" id="greetingToast"></div>
 <div class="grid-overlay"></div>
 <div class="wrap">
 
@@ -1053,6 +1150,47 @@
 </div>
 
 <script>
+// ---- Name gate: ask once, remember, greet on every visit ----
+const NAME_STORAGE_KEY = 'userName';
+
+function getSavedName(){
+  try{ return localStorage.getItem(NAME_STORAGE_KEY); } catch(e){ return null; }
+}
+function saveName(name){
+  try{ localStorage.setItem(NAME_STORAGE_KEY, name); } catch(e){}
+}
+
+function showGreeting(name){
+  const toast = document.getElementById('greetingToast');
+  toast.textContent = `שלום ${name}, הגעת ליועץ כושר אישי`;
+  toast.classList.add('show');
+  setTimeout(()=> toast.classList.remove('show'), 4000);
+}
+
+(function initNameGate(){
+  const gate = document.getElementById('nameGate');
+  const saved = getSavedName();
+  if(saved){
+    gate.style.display = 'none';
+    showGreeting(saved);
+  } else {
+    gate.style.display = 'flex';
+    setTimeout(()=> document.getElementById('nameGateInput').focus(), 100);
+  }
+})();
+
+function submitNameGate(){
+  const input = document.getElementById('nameGateInput');
+  const name = input.value.trim();
+  if(!name){ input.focus(); return; }
+  saveName(name);
+  document.getElementById('nameGate').style.display = 'none';
+  showGreeting(name);
+}
+document.getElementById('nameGateBtn').addEventListener('click', submitNameGate);
+document.getElementById('nameGateInput').addEventListener('keydown', (e)=>{
+  if(e.key === 'Enter') submitNameGate();
+});
 // ---- Personal avatar upload (next to the logo) ----
 const avatarUpload = document.getElementById('avatarUpload');
 const avatarInput = document.getElementById('avatarInput');

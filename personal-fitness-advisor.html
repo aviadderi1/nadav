@@ -1150,7 +1150,7 @@
         <button type="button" class="notif-btn" id="notifBtn">🔔 הפעל התראות אימון</button>
         <span class="notif-status" id="notifStatus"></span>
       </div>
-      <p class="notif-caveat">ההתראה נשלחת מהדפדפן/מהאפליקציה בזמן אמת, כל עוד היא פתוחה ברקע — היא לא פועלת אם האפליקציה סגורה לגמרי או שהטלפון כבוי.</p>
+      <p class="notif-caveat">ההתראה נשלחת רבע שעה לפני מועד האימון, מהדפדפן/מהאפליקציה בזמן אמת, כל עוד היא פתוחה ברקע — היא לא פועלת אם האפליקציה סגורה לגמרי או שהטלפון כבוי.</p>
 
       <div class="workout-grid" id="workoutGrid"></div>
     </div>
@@ -1971,19 +1971,27 @@ function checkWorkoutNotifications(){
 
   const now = new Date();
   const todayName = WORKOUT_DAYS[now.getDay()]; // getDay(): 0=Sunday..6=Saturday, matches WORKOUT_DAYS order
-  const currentHH = String(now.getHours()).padStart(2,'0') + ':00';
+  const currentHH = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
   const dateStr = now.toISOString().slice(0,10);
 
   const todaysWorkouts = schedule[todayName] || [];
   todaysWorkouts.forEach(entry=>{
-    if(entry.hour === currentHH && entry.muscles && entry.muscles.length){
+    if(!entry.muscles || !entry.muscles.length) return;
+
+    // notify 15 minutes before the scheduled workout time
+    const [h, m] = entry.hour.split(':').map(Number);
+    let leadMinutes = h*60 + m - 15;
+    if(leadMinutes < 0) leadMinutes += 24*60;
+    const targetHH = String(Math.floor(leadMinutes/60)).padStart(2,'0') + ':' + String(leadMinutes%60).padStart(2,'0');
+
+    if(currentHH === targetHH){
       const key = `${dateStr}-${todayName}-${entry.hour}`;
       if(notifiedToday.has(key)) return;
       notifiedToday.add(key);
       persistNotifiedSet(notifiedToday);
       try{
         new Notification('הגיעה הזמן להתאמן', {
-          body: `היום יש אימון ${joinMuscles(entry.muscles)}`,
+          body: `בעוד רבע שעה יש אימון ${joinMuscles(entry.muscles)}`,
           icon: 'icon-192.png'
         });
       } catch(e){}

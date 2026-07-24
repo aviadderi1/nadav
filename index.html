@@ -431,6 +431,34 @@
     flex-shrink:0;
   }
 
+  .notif-bar{
+    display:flex; align-items:center; gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+  }
+  .notif-btn{
+    border: 1.5px solid var(--border);
+    background: var(--surface-2);
+    color: var(--text);
+    font-family:'Rubik'; font-weight:700; font-size: 14px;
+    padding: 10px 18px;
+    border-radius: 100px;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .notif-btn:hover{ border-color: var(--goal-a); background: var(--goal-a-soft); }
+  .notif-btn.enabled{
+    border-color: var(--goal-a);
+    background: var(--goal-a-soft);
+    color: var(--goal-a);
+  }
+  .notif-status{ font-size: 12.5px; color: var(--text-faint); font-weight:600; }
+  .notif-caveat{
+    font-size: 12px; color: var(--text-faint);
+    line-height: 1.6;
+    margin: 0 0 18px;
+  }
+
   .workout-grid{
     display:grid;
     grid-template-columns: repeat(7, 1fr);
@@ -1121,6 +1149,13 @@
     <div class="card workout-schedule-card">
       <h3 class="card-title">לוח אימונים שבועי</h3>
       <p class="card-desc">לכל יום אפשר להוסיף אימון — בחרו שעה (06:00–22:00) וקבוצת שרירים. אפשר להוסיף כמה אימונים באותו יום.</p>
+
+      <div class="notif-bar">
+        <button type="button" class="notif-btn" id="notifBtn">🔔 הפעל התראות אימון</button>
+        <span class="notif-status" id="notifStatus"></span>
+      </div>
+      <p class="notif-caveat">ההתראה נשלחת מהדפדפן/מהאפליקציה בזמן אמת, כל עוד היא פתוחה ברקע — היא לא פועלת אם האפליקציה סגורה לגמרי או שהטלפון כבוי.</p>
+
       <div class="workout-grid" id="workoutGrid"></div>
     </div>
 
@@ -1814,14 +1849,35 @@ for(let h=6; h<=22; h++){
   WORKOUT_HOURS.push(String(h).padStart(2,'0') + ':00');
 }
 
-function createWorkoutRow(){
+function saveWorkoutSchedule(){
+  const data = {};
+  WORKOUT_DAYS.forEach(day=> data[day] = []);
+  document.querySelectorAll('.workout-day').forEach(col=>{
+    const day = col.querySelector('.workout-day-title').textContent;
+    col.querySelectorAll('.workout-row').forEach(row=>{
+      const hour = row.querySelector('.workout-hour').value;
+      const muscles = [...row.querySelectorAll('.muscle-chip.active')].map(c=>c.dataset.muscle);
+      data[day].push({hour, muscles});
+    });
+  });
+  try{ localStorage.setItem('workoutSchedule', JSON.stringify(data)); } catch(e){}
+}
+
+function loadWorkoutSchedule(){
+  try{
+    const raw = localStorage.getItem('workoutSchedule');
+    return raw ? JSON.parse(raw) : null;
+  } catch(e){ return null; }
+}
+
+function createWorkoutRow(initial){
   const row = document.createElement('div');
   row.className = 'workout-row';
 
   const removeBtn = document.createElement('div');
   removeBtn.className = 'remove-row';
   removeBtn.textContent = '×';
-  removeBtn.addEventListener('click', ()=> row.remove());
+  removeBtn.addEventListener('click', ()=>{ row.remove(); saveWorkoutSchedule(); });
 
   const hourSelect = document.createElement('select');
   hourSelect.className = 'workout-hour';
@@ -1829,8 +1885,10 @@ function createWorkoutRow(){
     const opt = document.createElement('option');
     opt.value = h;
     opt.textContent = h;
+    if(initial && initial.hour === h) opt.selected = true;
     hourSelect.appendChild(opt);
   });
+  hourSelect.addEventListener('change', saveWorkoutSchedule);
 
   const muscleChips = document.createElement('div');
   muscleChips.className = 'muscle-chips';
@@ -1838,9 +1896,13 @@ function createWorkoutRow(){
     const chip = document.createElement('button');
     chip.type = 'button';
     chip.className = 'muscle-chip';
+    if(initial && initial.muscles && initial.muscles.includes(m)) chip.classList.add('active');
     chip.textContent = m;
     chip.dataset.muscle = m;
-    chip.addEventListener('click', ()=> chip.classList.toggle('active'));
+    chip.addEventListener('click', ()=>{
+      chip.classList.toggle('active');
+      saveWorkoutSchedule();
+    });
     muscleChips.appendChild(chip);
   });
 
@@ -1853,6 +1915,7 @@ function createWorkoutRow(){
 function buildWorkoutGrid(){
   const grid = document.getElementById('workoutGrid');
   grid.innerHTML = '';
+  const saved = loadWorkoutSchedule();
 
   WORKOUT_DAYS.forEach(day=>{
     const col = document.createElement('div');
@@ -1864,13 +1927,18 @@ function buildWorkoutGrid(){
 
     const rowsWrap = document.createElement('div');
     rowsWrap.className = 'workout-rows';
-    rowsWrap.appendChild(createWorkoutRow());
+
+    const savedRows = saved && saved[day] && saved[day].length ? saved[day] : [null];
+    savedRows.forEach(entry=> rowsWrap.appendChild(createWorkoutRow(entry)));
 
     const addBtn = document.createElement('button');
     addBtn.type = 'button';
     addBtn.className = 'add-workout-btn';
     addBtn.textContent = '+ הוסף אימון';
-    addBtn.addEventListener('click', ()=> rowsWrap.appendChild(createWorkoutRow()));
+    addBtn.addEventListener('click', ()=>{
+      rowsWrap.appendChild(createWorkoutRow());
+      saveWorkoutSchedule();
+    });
 
     col.appendChild(title);
     col.appendChild(rowsWrap);
@@ -1880,6 +1948,88 @@ function buildWorkoutGrid(){
 }
 
 buildWorkoutGrid();
+
+// ---- Workout notifications ----
+function joinMuscles(list){
+  if(list.length === 1) return list[0];
+  if(list.length === 2) return `${list[0]} ו${list[1]}`;
+  return `${list.slice(0,-1).join(', ')} ו${list[list.length-1]}`;
+}
+
+function loadNotifiedSet(){
+  try{
+    const raw = JSON.parse(localStorage.getItem('notifiedWorkouts') || '[]');
+    const todayStr = new Date().toISOString().slice(0,10);
+    return new Set(raw.filter(k=>k.startsWith(todayStr)));
+  } catch(e){ return new Set(); }
+}
+function persistNotifiedSet(set){
+  try{ localStorage.setItem('notifiedWorkouts', JSON.stringify([...set])); } catch(e){}
+}
+let notifiedToday = loadNotifiedSet();
+
+function checkWorkoutNotifications(){
+  if(!('Notification' in window) || Notification.permission !== 'granted') return;
+  const schedule = loadWorkoutSchedule();
+  if(!schedule) return;
+
+  const now = new Date();
+  const todayName = WORKOUT_DAYS[now.getDay()]; // getDay(): 0=Sunday..6=Saturday, matches WORKOUT_DAYS order
+  const currentHH = String(now.getHours()).padStart(2,'0') + ':00';
+  const dateStr = now.toISOString().slice(0,10);
+
+  const todaysWorkouts = schedule[todayName] || [];
+  todaysWorkouts.forEach(entry=>{
+    if(entry.hour === currentHH && entry.muscles && entry.muscles.length){
+      const key = `${dateStr}-${todayName}-${entry.hour}`;
+      if(notifiedToday.has(key)) return;
+      notifiedToday.add(key);
+      persistNotifiedSet(notifiedToday);
+      try{
+        new Notification('הגיעה הזמן להתאמן', {
+          body: `היום יש אימון ${joinMuscles(entry.muscles)}`,
+          icon: 'icon-192.png'
+        });
+      } catch(e){}
+    }
+  });
+}
+
+setInterval(checkWorkoutNotifications, 20000);
+checkWorkoutNotifications();
+
+function updateNotifStatus(){
+  const btn = document.getElementById('notifBtn');
+  const status = document.getElementById('notifStatus');
+  if(!('Notification' in window)){
+    status.textContent = 'הדפדפן הזה לא תומך בהתראות';
+    btn.disabled = true;
+    return;
+  }
+  if(Notification.permission === 'granted'){
+    btn.textContent = '🔔 התראות אימון פעילות';
+    btn.classList.add('enabled');
+    status.textContent = '';
+  } else if(Notification.permission === 'denied'){
+    btn.textContent = '🔕 התראות חסומות בדפדפן';
+    status.textContent = 'יש לאשר התראות בהגדרות הדפדפן/האתר';
+  } else {
+    btn.textContent = '🔔 הפעל התראות אימון';
+    btn.classList.remove('enabled');
+    status.textContent = '';
+  }
+}
+
+document.getElementById('notifBtn').addEventListener('click', async ()=>{
+  if(!('Notification' in window)) return;
+  if(Notification.permission === 'default'){
+    await Notification.requestPermission();
+  }
+  updateNotifStatus();
+  checkWorkoutNotifications();
+});
+
+updateNotifStatus();
 
 function gramsFor(food, targetGramMacro, macroKey){
   const per100 = food[macroKey];

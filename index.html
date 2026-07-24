@@ -1233,7 +1233,7 @@
 
     <div class="card schedule-card">
       <h3 class="card-title">לוח אימונים שבועי</h3>
-      <p class="card-desc">הוסיפו את הימים והשעות הקבועים שבהם אתם מתאמנים (כולל חצאי שעות). הרשימה נשמרת בדפדפן אצלכם.</p>
+      <p class="card-desc">הוסיפו את הימים והשעות הקבועים שבהם אתם מתאמנים (בקפיצות של 5 דקות). הרשימה נשמרת בדפדפן אצלכם.</p>
 
       <div class="schedule-add-row">
         <select id="scheduleDay"></select>
@@ -1782,12 +1782,13 @@ for(let h=0; h<24; h++){
 }
 
 const scheduleMinuteSelect = document.getElementById('scheduleMinute');
-['00','30'].forEach(mm=>{
+for(let m=0; m<60; m+=5){
+  const mm = String(m).padStart(2,'0');
   const opt = document.createElement('option');
   opt.value = mm;
   opt.textContent = mm;
   scheduleMinuteSelect.appendChild(opt);
-});
+}
 
 function loadSchedule(){
   try{
